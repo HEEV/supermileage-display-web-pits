@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model car {
+  car_id   Int        @id
+  car_name String?    @db.VarChar(30)
+  car_type String?    @db.VarChar(30)
+  car_data car_data[]
+}
+
+model car_data {
+  car_id            Int
+  time              DateTime @db.Timestamp(6)
+  voltage           Float?
+  speed             Float?
+  engine_temp       Float?
+  wind_speed        Float?
+  distance_traveled Float?
+  car               car      @relation(fields: [car_id], references: [car_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([car_id, time])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
+}
