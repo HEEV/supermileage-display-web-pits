@@ -29,3 +29,5 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: `Error fetching car data: ${error}` }, { status: 500 });
   }
 }
+
+export const runtime = 'edge';
