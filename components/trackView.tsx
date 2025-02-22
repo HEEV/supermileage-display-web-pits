@@ -14,7 +14,7 @@ export default function TrackView(props: {trackName: "ShellTrackFixed" | "Endura
   const trackLength = tracks[props.trackName as keyof typeof tracks].length;
 
   return (
-    <div>
+    <div className="h-full w-full">
       <svg id='map' viewBox="0 0 700 485" width={props.scale + '%'} height={props.scale + '%'} xmlns="http://www.w3.org/2000/svg" baseProfile="tiny" version="1.1">
         <g>
           <title>Layer 1</title>

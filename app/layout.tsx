@@ -4,6 +4,7 @@ import "./globals.css";
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import Stinger from "@/public/stinger.png";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,6 +40,7 @@ export default function RootLayout({
         <main className="pt-30">
           {children}
         </main>
+        <Toaster />
       </body>
     </html>
   );
