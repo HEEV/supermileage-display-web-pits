@@ -13,13 +13,14 @@ export async function GET(request: Request) {
   }
 
   try {
-    const carData = await prisma.car_data.findFirst({
+    const carData = await prisma.car_data.findMany({
       where: {
         car_id: Number(car_id),
       },
       orderBy: {
         time: 'desc',
       },
+      take: 1,
       select: {
         voltage: true,
         speed: true,
@@ -31,8 +32,8 @@ export async function GET(request: Request) {
     });
 
     const serializedCarData = {
-      ...carData,
-      time: carData?.time ? carData.time.toString() : null
+      ...carData[0],
+      time: carData[0]?.time ? carData[0].time.toString() : null
     }
 
     return NextResponse.json(serializedCarData);

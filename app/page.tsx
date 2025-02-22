@@ -144,7 +144,7 @@ export default function Home() {
           )
         })}
       </Tabs>
-      <Button onClick={() => dummyDataCreate()} className="m-5 w-100 self-center" >Add dummy data</Button>
+      {!isMobile ? <Button onClick={() => dummyDataCreate()} className="m-5 w-100 self-center" >Add dummy data</Button> : null}
     </div>
   );
 }
