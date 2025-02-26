@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import TrackView from "@/components/trackView";
 import DataCard from "@/components/dataCard";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
 
 
 interface CarData {
@@ -69,7 +68,7 @@ export default function Home() {
           toast({
             title: "Message",
             description: "No recent data to display",
-            duration: 5000
+            duration: 2500
           });
           
         }
@@ -95,25 +94,25 @@ export default function Home() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [carSelected]);
 
-  function dummyDataCreate() {
-    const dummyData = {
-      car_id: 1,
-      voltage: Math.round(Math.random() * 12 * 10) / 10,
-      speed: Math.round(Math.random() * 100 * 10) / 10,
-      engine_temp: Math.round(Math.random() * 200 * 10) / 10,
-      wind_speed: Math.round(Math.random() * 50 * 10) / 10,
-      distance_traveled: Math.round(Math.random() * 10000),
-      time: Date.now()
-    }
+  // function dummyDataCreate() {
+  //   const dummyData = {
+  //     car_id: 1,
+  //     voltage: Math.round(Math.random() * 12 * 10) / 10,
+  //     speed: Math.round(Math.random() * 100 * 10) / 10,
+  //     engine_temp: Math.round(Math.random() * 200 * 10) / 10,
+  //     wind_speed: Math.round(Math.random() * 50 * 10) / 10,
+  //     distance_traveled: Math.round(Math.random() * 10000),
+  //     time: Date.now()
+  //   }
 
-    fetch("/api/carData", {
-      method: "POST",
-      body: JSON.stringify(dummyData),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-  }
+  //   fetch("/api/carData", {
+  //     method: "POST",
+  //     body: JSON.stringify(dummyData),
+  //     headers: {
+  //       "Content-Type": "application/json"
+  //     }
+  //   });
+  // }
 
   return (
     <div className="w-full flex flex-col">
@@ -130,21 +129,20 @@ export default function Home() {
             <TabsContent value={String(car.car_id) ?? 0} key={car.car_name}>
               <h1 className="m-5 text-2xl font-bold">{car.car_name}</h1>
               <Card className={`w-90% min-w-[830px] m-5 p-2 grid ${isMobile ? "grid-cols-1" : "grid-cols-3"} justify-items-center items-center`}>
-                <DataCard dataValue={carData.voltage ?? 0} dataName="Volts" />
-                <DataCard dataValue={carData.speed ?? 0} dataName="mph" />
-                <DataCard dataValue={carData.engine_temp ?? 0} dataName="°F" />
-                <DataCard dataValue={carData.distance_traveled ?? 0} dataName="ft" />
+                <DataCard dataValue={carData.voltage ?? 0} dataName="Volts" cardTitle="Car Voltage" />
+                <DataCard dataValue={carData.speed ?? 0} dataName="mph" cardTitle="Vehicle Speed" />
+                <DataCard dataValue={carData.engine_temp ?? 0} dataName="°F" cardTitle="Engine Temp" />
+                <DataCard dataValue={carData.distance_traveled ?? 0} dataName="ft" cardTitle="Distance Traveled" />
                 <Card className="w-7/8 h-7/8 p-5">
                   <TrackView trackName={"ShellTrackFixed"} distanceTraveled={carData.distance_traveled ?? 0} scale={85} />
                 </Card>
-                <DataCard dataValue={carData.wind_speed ?? 0} dataName="mph" />
+                <DataCard dataValue={carData.wind_speed ?? 0} dataName="mph" cardTitle="Relative Windspeed" />
                 
               </Card>
             </TabsContent>
           )
         })}
       </Tabs>
-      {!isMobile ? <Button onClick={() => dummyDataCreate()} className="m-5 w-100 self-center" >Add dummy data</Button> : null}
     </div>
   );
 }
