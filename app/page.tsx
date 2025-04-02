@@ -77,7 +77,7 @@ export default function Home() {
             title: "Warning",
             description: "Data is more than 10 seconds old, car may be disconnected",
             variant: "destructive",
-            duration: 10000
+            duration: 2500
           });
         }
       }
@@ -132,9 +132,9 @@ export default function Home() {
                 <DataCard dataValue={carData.voltage ?? 0} dataName="Volts" cardTitle="Car Voltage" />
                 <DataCard dataValue={carData.speed ?? 0} dataName="mph" cardTitle="Vehicle Speed" />
                 <DataCard dataValue={carData.engine_temp ?? 0} dataName="°F" cardTitle="Engine Temp" />
-                <DataCard dataValue={carData.distance_traveled ?? 0} dataName="ft" cardTitle="Distance Traveled" />
+                <DataCard dataValue={Number(carData.distance_traveled?.toFixed(1)) ?? 0} dataName="ft" cardTitle="Distance Traveled" />
                 <Card className="w-7/8 h-7/8 p-5">
-                  <TrackView trackName={"ShellTrackFixed"} distanceTraveled={carData.distance_traveled ?? 0} scale={85} />
+                  <TrackView trackName={"ShellTrackFixed"} distanceTraveled={carData.distance_traveled ?? 0} scale={90} />
                 </Card>
                 <DataCard dataValue={carData.wind_speed ?? 0} dataName="mph" cardTitle="Relative Windspeed" />
                 

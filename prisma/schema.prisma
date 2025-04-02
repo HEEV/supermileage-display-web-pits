@@ -7,7 +7,7 @@ datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("MIGRATE_DATABASE_URL")
-  schemas   = ["public", "car_acquisition"]
+  schemas   = ["car_acquisition", "public"]
 }
 
 model car {
@@ -19,18 +19,28 @@ model car {
   @@schema("car_acquisition")
 }
 
-
 model car_data {
   car_id            Int
   time              BigInt
   voltage           Float?
   speed             Float?
   engine_temp       Float?
+  rad_temp          Float?
   wind_speed        Float?
   distance_traveled Float?
   car               car    @relation(fields: [car_id], references: [car_id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([car_id, time])
-
   @@schema("car_acquisition")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
+
+  @@schema("public")
 }
