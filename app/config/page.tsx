@@ -7,7 +7,7 @@ export default function ConfigPage() {
   return (
     <div style={{ padding: '2rem', position: 'relative'}}>
       <BackButton />
-      <h1>Config Coming Soon</h1>
+      <h1>Config Editor Coming Soon</h1>
     </div>
   )
 }
