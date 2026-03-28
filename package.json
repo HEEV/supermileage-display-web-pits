@@ -22,6 +22,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.4.7",
     "lucide-react": "^0.475.0",
+    "mqtt": "^5.15.1",
     "navigator": "^1.0.1",
     "next": "^15.5.2",
     "react": "^19.0.0",
