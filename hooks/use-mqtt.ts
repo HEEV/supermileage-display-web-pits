@@ -7,19 +7,41 @@ interface UseMqttProps {
   topic: string;
 }
 
+const createClientId = (prefix: string) => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${prefix}-${crypto.randomUUID().slice(0, 8)}`;
+  }
+  return `${prefix}-${Math.random().toString(16).slice(2, 10)}`;
+};
+
 export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
   const clientRef = useRef<MqttClient | null>(null);
-  const [client, setClient] = useState<MqttClient | null>(null);
+  //const [client, setClient] = useState<MqttClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<{ topic: string; message: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+    const resolvedUri =
+      typeof window !== 'undefined' && window.location.protocol === 'https:'
+        ? uri.replace(/^ws:/, 'wss:')
+        : uri;
 
-    const mqttClient = mqtt.connect(uri, {
-      ...options,
-      reconnectPeriod: 5000, 
-    });
+    let mqttClient: MqttClient;
+    try {
+      const connectOptions: IClientOptions = {
+        ...options,
+        clientId: options?.clientId ?? createClientId('web-client'),
+        reconnectPeriod: 5000,
+      };
+
+      mqttClient = mqtt.connect(resolvedUri, {
+        ...connectOptions,
+      });
+    } catch (err) {
+      console.error('MQTT initialization failed:', err);
+      return;
+    }
 
     mqttClient.on('connect', () => {
         if (cancelled) { mqttClient.end(true); return; }
@@ -44,7 +66,7 @@ export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
         mqttClient.end(true);
         clientRef.current = null;
     };
-  }, [uri]); 
+  }, [options, topic, uri]); 
 
   const publish = useCallback(
     (targetTopic: string, message: string, pubOptions?: IClientPublishOptions) => {

@@ -51,7 +51,6 @@ export default function ConfigPage() {
     options: {
       username: process.env.NEXT_PUBLIC_MQTT_USERNAME as string,
       password: process.env.NEXT_PUBLIC_MQTT_PASSWORD as string,
-      clientId: `web-config-editor-${Math.random().toString(16).slice(2, 8)}`,
     }
   })
 
