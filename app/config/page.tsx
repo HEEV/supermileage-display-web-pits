@@ -3,7 +3,7 @@
 import BackButton from '@/components/ui/backButton'
 import { Trash2 } from "lucide-react";
 import { useMqtt } from '@/hooks/use-mqtt'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 interface Channel {
   id: number;
@@ -45,13 +45,15 @@ export default function ConfigPage() {
     },
   ]);
 
+  const mqttOptions = useMemo(() => ({
+    username: process.env.NEXT_PUBLIC_MQTT_USERNAME as string,
+    password: process.env.NEXT_PUBLIC_MQTT_PASSWORD as string,
+  }), []);
+
   const {publish, isConnected } = useMqtt({
     uri: process.env.NEXT_PUBLIC_MQTT_URL as string,
     topic: `cars/${selectedCar}/config`,
-    options: {
-      username: process.env.NEXT_PUBLIC_MQTT_USERNAME as string,
-      password: process.env.NEXT_PUBLIC_MQTT_PASSWORD as string,
-    }
+    options: mqttOptions
   })
 
   const handleCarChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

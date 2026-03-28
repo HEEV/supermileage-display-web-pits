@@ -49,13 +49,23 @@ export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
         mqttClient.subscribe(topic);
     });
 
+    mqttClient.on('close', () => {
+        setIsConnected(false);
+      });
+      
+      mqttClient.on('offline', () => {
+        setIsConnected(false);
+      });
+
     mqttClient.on('error', (err) => {
       console.error('MQTT Connection Error: ', err);
-      mqttClient.end();
+      mqttClient.reconnect();
+      //mqttClient.end();
     });
 
     mqttClient.on('message', (t, msg) => {
         if (!cancelled) setLastMessage({ topic: t, message: msg.toString() });
+        console.log('RECEIVED:', topic, msg.toString());
       });
     clientRef.current = mqttClient;
     return () => {
