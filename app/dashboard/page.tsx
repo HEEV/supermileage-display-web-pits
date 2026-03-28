@@ -25,7 +25,7 @@ export default function DashboardPage() {
       // 2. SANITIZE: Replace single quotes with double quotes so it becomes valid JSON
       const sanitized = lastMessage.message.replace(/'/g, '"');
       return JSON.parse(sanitized);
-    } catch (error) {
+    } catch (_error) {
       console.error("MQTT Parse Error. Raw message was:", lastMessage.message);
       return null;
     }
