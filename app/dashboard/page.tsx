@@ -22,7 +22,6 @@ export default function DashboardPage() {
     if (!lastMessage) return null;
   
     try {
-      // 2. SANITIZE: Replace single quotes with double quotes so it becomes valid JSON
       const sanitized = lastMessage.message.replace(/'/g, '"');
       return JSON.parse(sanitized);
     } catch (error) {

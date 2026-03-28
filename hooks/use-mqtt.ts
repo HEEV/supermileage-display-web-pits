@@ -9,7 +9,7 @@ interface UseMqttProps {
 
 export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
   const clientRef = useRef<MqttClient | null>(null);
-  const [client, setClient] = useState<MqttClient | null>(null);
+  //const [client, setClient] = useState<MqttClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<{ topic: string; message: string } | null>(null);
 
@@ -36,9 +36,6 @@ export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
         if (!cancelled) setLastMessage({ topic: t, message: msg.toString() });
       });
     clientRef.current = mqttClient;
-    //setClient(mqttClient);
-
-    // 3. Cleanup on unmount
     return () => {
         cancelled = true;
         mqttClient.end(true);
@@ -48,7 +45,7 @@ export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
 
   const publish = useCallback(
     (targetTopic: string, message: string, pubOptions?: IClientPublishOptions) => {
-      if (clientRef.current?.connected) {  // use .connected not isConnected state
+      if (clientRef.current?.connected) {
         clientRef.current.publish(targetTopic, message, pubOptions || {}, (err) => {
           if (err) console.error("Publish error:", err);
           else console.log("Published to", targetTopic);
@@ -57,7 +54,7 @@ export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
         console.warn("Not connected. client:", clientRef.current, "connected:", clientRef.current?.connected);
       }
     },
-    [] // no dependencies needed — ref is always current
+    [] 
   );
 //   const publish = useCallback(
 //     (targetTopic: string, message: string, options?: IClientPublishOptions) => {
