@@ -59,8 +59,6 @@ export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
 
     mqttClient.on('error', (err) => {
       console.error('MQTT Connection Error: ', err);
-      mqttClient.reconnect();
-      //mqttClient.end();
     });
 
     mqttClient.on('message', (t, msg) => {
@@ -88,19 +86,6 @@ export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
     },
     [] 
   );
-//   const publish = useCallback(
-//     (targetTopic: string, message: string, options?: IClientPublishOptions) => {
-//       if (client && isConnected) {
-//         client.publish(targetTopic, message, options || {}, (err) => {
-//           if (err) console.error("Publish error:", err);
-//         });
-//       } else {
-//         console.warn("MQTT client not connected. Cannot publish.");
-//       }
-//     },
-//     [client, isConnected]
-//   );
-
   return { isConnected, lastMessage, publish };
 };
 
