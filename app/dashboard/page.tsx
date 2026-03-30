@@ -1,7 +1,6 @@
 "use client";
 
 import BackButton from "@/components/ui/backButton";
-import {useMqtt} from "@/hooks/use-mqtt";
 import {Suspense, useMemo} from "react";
 import { useCarData } from "@/hooks/useCarData";
 import {useSearchParams, useRouter} from "next/navigation";  

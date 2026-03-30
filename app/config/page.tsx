@@ -2,7 +2,6 @@
 
 import BackButton from '@/components/ui/backButton'
 import { Trash2 } from "lucide-react";
-import { useMqtt } from '@/hooks/use-mqtt'
 import { usePublish } from '@/hooks/usePublish'
 import { Suspense, useState, useMemo } from 'react'
 import {useSearchParams, useRouter} from 'next/navigation'
