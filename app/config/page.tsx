@@ -4,7 +4,7 @@ import BackButton from '@/components/ui/backButton'
 import { Trash2 } from "lucide-react";
 import { useMqtt } from '@/hooks/use-mqtt'
 import { usePublish } from '@/hooks/usePublish'
-import { useState, useMemo } from 'react'
+import { Suspense, useState, useMemo } from 'react'
 import {useSearchParams, useRouter} from 'next/navigation'
 
 interface Channel {
@@ -28,7 +28,7 @@ const labelMap: Record<string, string> = {
 
 const fields = ['name','unit','conversionFactor','inputType','min','max'];
 
-export default function ConfigPage() {
+function ConfigContent() {
 
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -71,7 +71,7 @@ export default function ConfigPage() {
   };
 
   const handleSave = () => {
-    const sensorsConfig: Record<string, any> = {};
+    const sensorsConfig: Record<string, unknown> = {};
     channels.forEach((channel, index) => {
       sensorsConfig[`channel${index + 1}`] = {
         name: channel.name,
@@ -238,8 +238,8 @@ export default function ConfigPage() {
                           </label>
                           {field === 'inputType' ? (
                             <select
-                              value={(channel as any)[field]}
-                              onChange={(e) => updateChannel(index, field as any, e.target.value)}
+                              value={channel[field as keyof Channel]}
+                              onChange={(e) => updateChannel(index, field as keyof Channel, e.target.value)}
                               className="bg-zinc-800 border border-zinc-700 text-white w-full p-2 rounded"
                             >
                               <option value="analog">analog</option>
@@ -247,8 +247,8 @@ export default function ConfigPage() {
                             </select>
                           ) : (
                             <input
-                              value={(channel as any)[field]}
-                              onChange={(e) => updateChannel(index, field as any, e.target.value)}
+                              value={channel[field as keyof Channel]}
+                              onChange={(e) => updateChannel(index, field as keyof Channel, e.target.value)}
                               className="bg-zinc-800 border border-zinc-700 text-white w-full p-2 rounded"
                             />
                           )}
@@ -263,5 +263,13 @@ export default function ConfigPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ConfigPage() {
+  return (
+    <Suspense fallback={<div className="p-4">Loading config...</div>}>
+      <ConfigContent />
+    </Suspense>
   )
 }
