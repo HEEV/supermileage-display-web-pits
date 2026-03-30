@@ -9,7 +9,7 @@ export default function BackButton() {
   return (
     <button
     onClick={() => router.push('/pit')}
-    className="bg-slate-900/60 backdrop-blur rounded-2xl border border-slate-800 p-4 shadow-xl">
+    className="bg-zinc-800 backdrop-blur rounded-2xl border border-slate-800 p-4 shadow-xl">
     <ArrowLeft className="w-4 h-4" />
   </button>
   )

@@ -4,6 +4,7 @@ import BackButton from '@/components/ui/backButton'
 import { Trash2 } from "lucide-react";
 import { useMqtt } from '@/hooks/use-mqtt'
 import { useState, useMemo } from 'react'
+import {useSearchParams, useRouter} from 'next/navigation'
 
 interface Channel {
   id: number;
@@ -11,13 +12,26 @@ interface Channel {
   unit: string;
   conversionFactor: string;
   inputType: string;
-  min?: string;
-  max?: string;
+  min: string;
+  max: string;
 }
+
+const labelMap: Record<string, string> = {
+  name: 'Name',
+  unit: 'Unit',
+  conversionFactor: 'Conversion Factor',
+  inputType: 'Input Type',
+  min: 'Min Limit',
+  max: 'Max Limit'
+};
+
+const fields = ['name','unit','conversionFactor','inputType','min','max'];
 
 export default function ConfigPage() {
 
-  const [selectedCar, setSelectedCar] = useState<string>("karch");
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const selectedCar = searchParams.get('car') || 'karch'
   const [active, setActive] = useState(true);
   const [theme, setTheme] = useState("default");
   const [weight, setWeight] = useState("30");
@@ -28,7 +42,7 @@ export default function ConfigPage() {
     {
       id: 1,
       name: "Speed",
-      unit: "MPH ",
+      unit: "MPH",
       conversionFactor: "50",
       inputType: "analog",
       min: "0",
@@ -40,8 +54,8 @@ export default function ConfigPage() {
       unit: "",
       conversionFactor: "0.0",
       inputType: "digital",
-      min: "",
-      max: "",
+      min: "0",
+      max: "0"
     },
   ]);
 
@@ -50,44 +64,27 @@ export default function ConfigPage() {
     password: process.env.NEXT_PUBLIC_MQTT_PASSWORD as string,
   }), []);
 
-  const {publish, isConnected } = useMqtt({
+  const { publish, isConnected } = useMqtt({
     uri: process.env.NEXT_PUBLIC_MQTT_URL as string,
     topic: `cars/${selectedCar}/config`,
     options: mqttOptions
   })
 
-  const handleCarChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedCar(e.target.value);
-  }
-
-  const updateChannel = (
-    index: number,
-    field: keyof Channel,
-    value: string
-  ) => {
-    setChannels((prev) => {
+  const updateChannel = (index: number, field: keyof Channel, value: string) => {
+    setChannels(prev => {
       const updated = [...prev];
-      updated[index] = {
-        ...updated[index],
-        [field]: value,
-      };
+      updated[index] = { ...updated[index], [field]: value };
       return updated;
     });
   };
 
-  const deleteChannel = (index: number) => {
-    setChannels((prev) => prev.filter((_, i) => i !== index));
-  };
-
   const handleSave = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sensorsConfig: Record<string, any> = {};
     channels.forEach((channel, index) => {
       sensorsConfig[`channel${index + 1}`] = {
         name: channel.name,
         unit: channel.unit,
-        conversion_factor:
-          parseFloat(channel.conversionFactor) || 0,
+        conversion_factor: parseFloat(channel.conversionFactor) || 0,
         input_type: channel.inputType,
         limits: {
           min: parseFloat(channel.min ?? "0") || 0,
@@ -98,8 +95,8 @@ export default function ConfigPage() {
 
     const cars = {
       [selectedCar]: {
-        active: active,
-        theme: theme,
+        active,
+        theme,
         selected_driver: selectedDriver,
         metadata: {
           weight: parseFloat(weight),
@@ -108,184 +105,172 @@ export default function ConfigPage() {
         sensors: sensorsConfig,
       },
     };
-    const payload = JSON.stringify(cars);
-    publish(`cars/${selectedCar}/config`, payload, { 
-      retain: true, 
-      qos: 1 
+
+    publish(`cars/${selectedCar}/config`, JSON.stringify(cars), {
+      retain: true,
+      qos: 1
     });
   };
 
   return (
-    <div style={{ padding: '2rem', position: 'relative'}}>
-      <BackButton />
-      <select 
-        value={selectedCar} 
-        onChange={handleCarChange}
-        className="mb-4 p-2 border rounded text-white"
-      >
-        <option value="karch">Karcharius</option>
-        <option value="sting">Sting</option>
-      </select>
-      <p>Status: {isConnected ? "Connected" : "Disconnected"}</p>
-      <button 
-        onClick={handleSave}
-        disabled={!isConnected}
-        className="bg-blue-600 px-4 py-2 rounded disabled:opacity-50"
-        >
-        Push Changes
-      </button>
-      <div className="space-y-4 mb-6">
-        <div>
-          <label>Active</label>
-          <select
-            value={active ? "true" : "false"}
-            onChange={(e) => setActive(e.target.value === "true")}
-            className="ml-2 p-2 rounded bg-slate-800"
-          >
-            <option value="true">True</option>
-            <option value="false">False</option>
-          </select>
-        </div>
-        <div>
-          <label>Theme</label>
-          <select
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-            className="ml-2 p-2 rounded bg-slate-800"
-          >
-            <option value="default">Default</option>
-            <option value="color-blind">Color Blind</option>
-          </select>
-        </div>
-        <div>
-          <label>Driver</label>
-          <input
-            type="text"
-            value={selectedDriver}
-            onChange={(e) => setSelectedDriver(e.target.value)}
-            className="ml-2 p-2 rounded bg-slate-800"
-          />
-        </div>
-        <div>
-          <label>Race</label>
-          <input
-            type="text"
-            value={selectedRace}
-            onChange={(e) => setSelectedRace(e.target.value)}
-            className="ml-2 p-2 rounded bg-slate-800"
-          />
-        </div>
-        <div>
-          <label>Weight</label>
-          <input
-            type="number"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            className="ml-2 p-2 rounded bg-slate-800"
-          />
-        </div>
-        <div>
-          <label>Power Plant</label>
-          <select
-            value={powerPlant}
-            onChange={(e) => setPowerPlant(e.target.value)}
-            className="ml-2 p-2 rounded bg-slate-800"
-          >
-            <option value="gasoline">Gasoline</option>
-            <option value="electric">Electric</option>
-          </select>
-        </div>
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold">Channels</h2>
-
-          {channels.map((channel, index) => (
-            <div key={channel.id} className="relative border p-4 rounded bg-slate-900">
-              <button
-                onClick={() => deleteChannel(index)}
-                className="absolute top-2 right-2 text-red-500 hover:text-red-400"
-              >
-                <Trash2 size={18} />
-              </button>
-
-              <h3 className="mb-2">Channel {index + 1}</h3>
-              <input
-                type="text"
-                value={channel.name}
-                placeholder="Name"
-                onChange={(e) =>
-                  updateChannel(index, "name", e.target.value)
-                }
-                className="p-2 mr-2 mb-2 bg-slate-800 rounded"
-              />
-              <input
-                type="text"
-                value={channel.unit}
-                placeholder="Unit"
-                onChange={(e) =>
-                  updateChannel(index, "unit", e.target.value)
-                }
-                className="p-2 mr-2 mb-2 bg-slate-800 rounded"
-              />
-              <input
-                type="number"
-                value={channel.conversionFactor}
-                placeholder="Conversion"
-                onChange={(e) =>
-                  updateChannel(index, "conversionFactor", e.target.value)
-                }
-                className="p-2 mr-2 mb-2 bg-slate-800 rounded"
-              />
+    <div className="h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 p-4 overflow-hidden">
+      <div className="max-w-7xl mx-auto h-full flex flex-col">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <div className="w-40">
               <select
-                value={channel.inputType}
-                onChange={(e) =>
-                  updateChannel(index, "inputType", e.target.value)
-                }
-                className="p-2 mr-2 mb-2 bg-slate-800 rounded"
+                value={selectedCar}
+                onChange={(e) => router.push(`?car=${e.target.value}`)}
+                className="bg-zinc-800 border border-zinc-700 text-white h-10 rounded w-full px-2"
               >
-                <option value="analog">Analog</option>
-                <option value="digital">Digital</option>
+                <option value="karch">Karcharius</option>
+                <option value="sting">Sting</option>
               </select>
-              <input
-                type="number"
-                value={channel.min}
-                placeholder="Min"
-                onChange={(e) =>
-                  updateChannel(index, "min", e.target.value)
-                }
-                className="p-2 mr-2 mb-2 bg-slate-800 rounded"
-              />
-              <input
-                type="number"
-                value={channel.max}
-                placeholder="Max"
-                onChange={(e) =>
-                  updateChannel(index, "max", e.target.value)
-                }
-                className="p-2 mr-2 mb-2 bg-slate-800 rounded"
-              />
             </div>
-          ))}
+            <div>
+              <h1 className="text-lg font-bold text-white">Configuration Editor</h1>
+            </div>
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={!isConnected}
+            className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded disabled:opacity-50"
+          >
+            Push Changes
+          </button>
+        </div>
+        <div className="flex-1 overflow-auto">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
+              <h3 className="text-sm font-bold text-white mb-4">General Settings</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-zinc-400 mb-1 block">Active</label>
+                  <select
+                    value={active ? "true" : "false"}
+                    onChange={(e) => setActive(e.target.value === "true")}
+                    className="bg-zinc-800 border border-zinc-700 text-white w-full p-2 rounded"
+                  >
+                    <option value="true">true</option>
+                    <option value="false">false</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-400 mb-1 block">Theme</label>
+                  <select
+                    value={theme}
+                    onChange={(e) => setTheme(e.target.value)}
+                    className="bg-zinc-800 border border-zinc-700 text-white w-full p-2 rounded"
+                  >
+                    <option value="default">Default</option>
+                    <option value="color-blind">Color Blind</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-400 mb-1 block">Driver</label>
+                  <input
+                    value={selectedDriver}
+                    onChange={(e) => setSelectedDriver(e.target.value)}
+                    className="bg-zinc-800 border border-zinc-700 text-white w-full p-2 rounded"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-400 mb-1 block">Race</label>
+                  <input
+                    value={selectedRace}
+                    onChange={(e) => setSelectedRace(e.target.value)}
+                    className="bg-zinc-800 border border-zinc-700 text-white w-full p-2 rounded"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
+              <h3 className="text-sm font-bold text-white mb-4">Metadata</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-zinc-400 mb-1 block">Weight</label>
+                  <input
+                    type="number"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    className="bg-zinc-800 border border-zinc-700 text-white w-full p-2 rounded"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-400 mb-1 block">Power Plant</label>
+                  <select
+                    value={powerPlant}
+                    onChange={(e) => setPowerPlant(e.target.value)}
+                    className="bg-zinc-800 border border-zinc-700 text-white w-full p-2 rounded"
+                  >
+                    <option value="gasoline">gasoline</option>
+                    <option value="electric">electric</option>
+                  </select>
+                </div>
+
+              </div>
+            </div>
+            <div className="col-span-2 bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-white">Sensors</h3>
+                <button
+                  onClick={() => setChannels(prev => [...prev, {
+                    id: prev.length + 1,
+                    name: "",
+                    unit: "",
+                    conversionFactor: "0",
+                    inputType: "analog",
+                    min: "",
+                    max: ""
+                  }])}
+                  className="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1 rounded"
+                >
+                  Add Channel
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                {channels.map((channel, index) => (
+                  <div key={channel.id} className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3 relative">
+
+                    <div className="flex justify-between mb-3">
+                      <h4 className="text-xs font-bold text-cyan-400">CHANNEL {index + 1}</h4>
+                      <button onClick={() => setChannels(prev => prev.filter((_, i) => i !== index))}>
+                        <Trash2 className="w-4 h-4 text-red-400" />
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                    {fields.map((field) => (
+                        <div key={field}>
+                          <label className="text-xs text-zinc-400 mb-1 block">
+                            {labelMap[field]}
+                          </label>
+                          {field === 'inputType' ? (
+                            <select
+                              value={(channel as any)[field]}
+                              onChange={(e) => updateChannel(index, field as any, e.target.value)}
+                              className="bg-zinc-800 border border-zinc-700 text-white w-full p-2 rounded"
+                            >
+                              <option value="analog">analog</option>
+                              <option value="digital">digital</option>
+                            </select>
+                          ) : (
+                            <input
+                              value={(channel as any)[field]}
+                              onChange={(e) => updateChannel(index, field as any, e.target.value)}
+                              className="bg-zinc-800 border border-zinc-700 text-white w-full p-2 rounded"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <button
-        onClick={() =>
-          setChannels((prev) => [
-            ...prev,
-            {
-              id: prev.length + 1,
-              name: "",
-              unit: "",
-              conversionFactor: "0",
-              inputType: "analog",
-              min: "",
-              max: "",
-            },
-          ])
-        }
-        className="bg-green-600 px-3 py-1 rounded mt-4"
-      >
-        Add Channel
-      </button>
     </div>
   )
 }

@@ -29,9 +29,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gradient-to-br from-slate-900 via-slate-950 to-black text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 p-4 text-white`}
       >
-        <header className="fixed top-0 left-0 w-full z-50 border-b border-slate-800 bg-slate-950/70 backdrop-blur-md">
+        <header className="fixed top-0 left-0 w-full z-50 border-b border-zinc-800 bg-zinc-950/70 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div className="flex items-center">
               <Image

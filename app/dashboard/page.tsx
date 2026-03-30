@@ -3,10 +3,15 @@
 import BackButton from "@/components/ui/backButton";
 import {useMqtt} from "@/hooks/use-mqtt";
 import {useState, useMemo} from "react";
+import {useSearchParams, useRouter} from "next/navigation";  
 
 export default function DashboardPage() {
 
-  const [selectedCar, setSelectedCar] = useState<string>("karch");
+
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  
+  const selectedCar = searchParams.get('car') || 'karch'
 
   const mqttOptions = useMemo(() => ({
     username: process.env.NEXT_PUBLIC_MQTT_USERNAME as string,
@@ -31,15 +36,12 @@ export default function DashboardPage() {
     }
   }, [lastMessage]);
 
-  const handleCarChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedCar(e.target.value);
-  }
   return (
     <div style={{ padding: '2rem', position: 'relative'}}>
       <BackButton />
       <select 
         value={selectedCar} 
-        onChange={handleCarChange}
+        onChange={(e) => router.push(`?car=${e.target.value}`)}
         className="mb-4 p-2 border rounded text-white"
       >
         <option value="karch">Karcharius</option>
