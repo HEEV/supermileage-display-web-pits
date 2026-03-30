@@ -79,7 +79,7 @@ export default function ConfigPage() {
   };
 
   const handleSave = () => {
-    const sensorsConfig: Record<string, any> = {};
+    const sensorsConfig: Record<string, unknown> = {};
     channels.forEach((channel, index) => {
       sensorsConfig[`channel${index + 1}`] = {
         name: channel.name,
@@ -247,8 +247,8 @@ export default function ConfigPage() {
                           </label>
                           {field === 'inputType' ? (
                             <select
-                              value={(channel as any)[field]}
-                              onChange={(e) => updateChannel(index, field as any, e.target.value)}
+                              value={channel[field as keyof Channel]}
+                              onChange={(e) => updateChannel(index, field as keyof Channel, e.target.value)}
                               className="bg-zinc-800 border border-zinc-700 text-white w-full p-2 rounded"
                             >
                               <option value="analog">analog</option>
@@ -256,8 +256,8 @@ export default function ConfigPage() {
                             </select>
                           ) : (
                             <input
-                              value={(channel as any)[field]}
-                              onChange={(e) => updateChannel(index, field as any, e.target.value)}
+                              value={channel[field as keyof Channel]}
+                              onChange={(e) => updateChannel(index, field as keyof Channel, e.target.value)}
                               className="bg-zinc-800 border border-zinc-700 text-white w-full p-2 rounded"
                             />
                           )}

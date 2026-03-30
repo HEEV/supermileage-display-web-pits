@@ -2,7 +2,7 @@
 
 import BackButton from "@/components/ui/backButton";
 import {useMqtt} from "@/hooks/use-mqtt";
-import {useState, useMemo} from "react";
+import {useMemo} from "react";
 import {useSearchParams, useRouter} from "next/navigation";  
 
 export default function DashboardPage() {
