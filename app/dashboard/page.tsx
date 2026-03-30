@@ -3,6 +3,7 @@
 import BackButton from "@/components/ui/backButton";
 import {useMqtt} from "@/hooks/use-mqtt";
 import {useState, useMemo} from "react";
+import { useCarData } from "@/hooks/useCarData";
 import {useSearchParams, useRouter} from "next/navigation";  
 
 export default function DashboardPage() {
@@ -13,28 +14,7 @@ export default function DashboardPage() {
   
   const selectedCar = searchParams.get('car') || 'karch'
 
-  const mqttOptions = useMemo(() => ({
-    username: process.env.NEXT_PUBLIC_MQTT_USERNAME as string,
-    password: process.env.NEXT_PUBLIC_MQTT_PASSWORD as string,
-  }), []);
-
-  const { isConnected, lastMessage } = useMqtt({
-    uri: process.env.NEXT_PUBLIC_MQTT_URL as string,
-    topic: `cars/${selectedCar}/data`,
-    options: mqttOptions
-  });
-
-  const carData = useMemo(() => {
-    if (!lastMessage) return null;
-  
-    try {
-      const sanitized = lastMessage.message.replace(/'/g, '"');
-      return JSON.parse(sanitized);
-    } catch (_error) {
-      console.error("MQTT Parse Error. Raw message was:", lastMessage.message);
-      return null;
-    }
-  }, [lastMessage]);
+  const { data: carData, isConnected } = useCarData(selectedCar);
 
   return (
     <div style={{ padding: '2rem', position: 'relative'}}>

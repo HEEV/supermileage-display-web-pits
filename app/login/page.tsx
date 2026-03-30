@@ -14,7 +14,7 @@ export default function LoginPage() {
       router.push('/pit')
     }
   }
-  
+
   return (
     <div className="min-h-screen flex items-center justify-center text-white">
       <div className="bg-zinc-900/50 border border-zinc-800 p-10 rounded-xl w-96 shadow-lg">

@@ -3,6 +3,7 @@
 import BackButton from '@/components/ui/backButton'
 import { Trash2 } from "lucide-react";
 import { useMqtt } from '@/hooks/use-mqtt'
+import { usePublish } from '@/hooks/usePublish'
 import { useState, useMemo } from 'react'
 import {useSearchParams, useRouter} from 'next/navigation'
 
@@ -59,16 +60,7 @@ export default function ConfigPage() {
     },
   ]);
 
-  const mqttOptions = useMemo(() => ({
-    username: process.env.NEXT_PUBLIC_MQTT_USERNAME as string,
-    password: process.env.NEXT_PUBLIC_MQTT_PASSWORD as string,
-  }), []);
-
-  const { publish, isConnected } = useMqtt({
-    uri: process.env.NEXT_PUBLIC_MQTT_URL as string,
-    topic: `cars/${selectedCar}/config`,
-    options: mqttOptions
-  })
+  const { publish } = usePublish();
 
   const updateChannel = (index: number, field: keyof Channel, value: string) => {
     setChannels(prev => {
@@ -106,7 +98,7 @@ export default function ConfigPage() {
       },
     };
 
-    publish(`cars/${selectedCar}/config`, JSON.stringify(cars), {
+    publish(`cars/${selectedCar}/config`, cars, {
       retain: true,
       qos: 1
     });
@@ -134,7 +126,6 @@ export default function ConfigPage() {
           </div>
           <button
             onClick={handleSave}
-            disabled={!isConnected}
             className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded disabled:opacity-50"
           >
             Push Changes
