@@ -2,7 +2,7 @@ import mqtt, { MqttClient } from "mqtt";
 
 let client: MqttClient | null = null;
 
-const latestMessages: Record<string, any> = {};
+const latestMessages: Record<string, unknown> = {};
 
 export function getMqttClient() {
     

@@ -1,7 +1,7 @@
 "use client";
 
 import BackButton from "@/components/ui/backButton";
-import {Suspense, useMemo} from "react";
+import {Suspense} from "react";
 import { useCarData } from "@/hooks/useCarData";
 import {useSearchParams, useRouter} from "next/navigation";  
 
