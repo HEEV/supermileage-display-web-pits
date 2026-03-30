@@ -2,12 +2,10 @@
 
 import BackButton from "@/components/ui/backButton";
 import {useMqtt} from "@/hooks/use-mqtt";
-import {useMemo} from "react";
+import {Suspense, useMemo} from "react";
 import {useSearchParams, useRouter} from "next/navigation";  
 
-export default function DashboardPage() {
-
-
+function DashboardContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   
@@ -67,5 +65,13 @@ export default function DashboardPage() {
         Time: {carData ? carData.time : "--"} 
       </p>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: '2rem' }}>Loading dashboard...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
