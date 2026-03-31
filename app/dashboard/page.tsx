@@ -1,11 +1,13 @@
 "use client";
 
 import BackButton from "@/components/ui/backButton";
-import {Suspense, useMemo} from "react";
-import { useCarData } from "@/hooks/useCarData";
+import {useMqtt} from "@/hooks/use-mqtt";
+import {useMemo} from "react";
 import {useSearchParams, useRouter} from "next/navigation";  
 
-function DashboardContent() {
+export default function DashboardPage() {
+
+
   const searchParams = useSearchParams()
   const router = useRouter()
   
@@ -44,13 +46,5 @@ function DashboardContent() {
         Time: {carData ? carData.time : "--"} 
       </p>
     </div>
-  );
-}
-
-export default function DashboardPage() {
-  return (
-    <Suspense fallback={<div style={{ padding: '2rem' }}>Loading dashboard...</div>}>
-      <DashboardContent />
-    </Suspense>
   );
 }

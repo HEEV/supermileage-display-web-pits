@@ -2,8 +2,8 @@
 
 import BackButton from '@/components/ui/backButton'
 import { Trash2 } from "lucide-react";
-import { usePublish } from '@/hooks/usePublish'
-import { Suspense, useState, useMemo } from 'react'
+import { useMqtt } from '@/hooks/use-mqtt'
+import { useState, useMemo } from 'react'
 import {useSearchParams, useRouter} from 'next/navigation'
 
 interface Channel {
@@ -27,7 +27,7 @@ const labelMap: Record<string, string> = {
 
 const fields = ['name','unit','conversionFactor','inputType','min','max'];
 
-function ConfigContent() {
+export default function ConfigPage() {
 
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -262,13 +262,5 @@ function ConfigContent() {
         </div>
       </div>
     </div>
-  )
-}
-
-export default function ConfigPage() {
-  return (
-    <Suspense fallback={<div className="p-4">Loading config...</div>}>
-      <ConfigContent />
-    </Suspense>
   )
 }
