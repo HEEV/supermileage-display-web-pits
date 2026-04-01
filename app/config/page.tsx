@@ -1,9 +1,9 @@
 'use client'
 
 import BackButton from '@/components/ui/backButton'
-import { Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react"
 import { useMqtt } from '@/hooks/use-mqtt'
-import { useState, useMemo } from 'react'
+import { Suspense, useState, useMemo, useEffect } from 'react'
 import {useSearchParams, useRouter} from 'next/navigation'
 
 interface Channel {
@@ -27,11 +27,12 @@ const labelMap: Record<string, string> = {
 
 const fields = ['name','unit','conversionFactor','inputType','min','max'];
 
-export default function ConfigPage() {
+function ConfigContent() {
 
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const selectedCar = searchParams.get('car') || 'karch'
+  const [allCarsConfig, setAllCarsConfig] = useState<Record<string, any>>({});
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const selectedCar = searchParams.get('car') || 'karch';
   const [active, setActive] = useState(true);
   const [theme, setTheme] = useState("default");
   const [weight, setWeight] = useState("30");
@@ -59,7 +60,16 @@ export default function ConfigPage() {
     },
   ]);
 
-  const { publish } = usePublish();
+  const mqttOptions = useMemo(() => ({
+    username: process.env.NEXT_PUBLIC_MQTT_USERNAME as string,
+    password: process.env.NEXT_PUBLIC_MQTT_PASSWORD as string,
+  }), []);
+
+  const { publish, isConnected, lastMessage } = useMqtt({
+    uri: process.env.NEXT_PUBLIC_MQTT_URL as string,
+    topic: `cars/config`,
+    options: mqttOptions
+  })
 
   const updateChannel = (index: number, field: keyof Channel, value: string) => {
     setChannels(prev => {
@@ -84,24 +94,65 @@ export default function ConfigPage() {
       };
     });
 
-    const cars = {
-      [selectedCar]: {
-        active,
-        theme,
-        selected_driver: selectedDriver,
-        metadata: {
-          weight: parseFloat(weight),
-          power_plant: powerPlant,
-        },
-        sensors: sensorsConfig,
+    const updatedCar = {
+      active,
+      theme,
+      selected_driver: selectedDriver,
+      metadata: {
+        weight: parseFloat(weight),
+        power_plant: powerPlant,
       },
+      sensors: sensorsConfig,
+    };
+  
+    const updatedAllCars = {
+      ...allCarsConfig,
+      [selectedCar]: updatedCar,
     };
 
-    publish(`cars/${selectedCar}/config`, cars, {
+    publish(`cars/${selectedCar}/config`, JSON.stringify({"cars": updatedAllCars}), {
       retain: true,
       qos: 1
     });
+  
+    setAllCarsConfig(updatedAllCars);
   };
+
+  useEffect(() => {
+    if (!lastMessage) return;
+  
+    try {
+      const parsed = JSON.parse(lastMessage.message);
+      const cars = parsed.cars ?? parsed;
+      const carConfig = (parsed.cars ?? parsed)[selectedCar];
+  
+      if (!carConfig) return;
+  
+      setActive(carConfig.active ?? true);
+      setTheme(carConfig.theme ?? "default");
+      setSelectedDriver(carConfig.selected_driver ?? "");
+      setWeight(String(carConfig.metadata?.weight ?? "0"));
+      setPowerPlant(carConfig.metadata?.power_plant ?? "gasoline");
+  
+      // Load sensors
+      if (carConfig.sensors) {
+        const loadedChannels = Object.values(carConfig.sensors).map((ch: any, i) => ({
+          id: i + 1,
+          name: ch.name || "",
+          unit: ch.unit || "",
+          conversionFactor: String(ch.conversion_factor ?? "0"),
+          inputType: ch.input_type || "analog",
+          min: String(ch.limits?.min ?? "0"),
+          max: String(ch.limits?.max ?? "0"),
+        }));
+  
+        setChannels(loadedChannels);
+        setAllCarsConfig(cars);
+      }
+    } catch (err) {
+      console.error("Failed to parse config:", err);
+    }
+  }, [lastMessage, selectedCar]);
 
   return (
     <div className="h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 p-4 overflow-hidden">
@@ -125,6 +176,7 @@ export default function ConfigPage() {
           </div>
           <button
             onClick={handleSave}
+            disabled={!isConnected}
             className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded disabled:opacity-50"
           >
             Push Changes
@@ -262,5 +314,13 @@ export default function ConfigPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ConfigPage() {
+  return (
+    <Suspense fallback={<div className="p-4">Loading config...</div>}>
+      <ConfigContent />
+    </Suspense>
   )
 }
