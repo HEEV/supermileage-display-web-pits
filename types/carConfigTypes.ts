@@ -40,3 +40,12 @@ export interface CarFormState {
   selectedDriver: string;
   selectedRace: string;
 }
+
+export const DefaultFormState: CarFormState = {
+    active: true,
+    theme: "default",
+    weight: "30",
+    powerPlant: "gasoline",
+    selectedDriver: "",
+    selectedRace: "Indy 500",
+  };

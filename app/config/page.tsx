@@ -1,26 +1,16 @@
 'use client'
 
 import BackButton from '@/components/ui/backButton'
-import { Trash2 } from "lucide-react"
 import { useMqtt } from '@/hooks/use-mqtt'
 import { Suspense, useState, useMemo, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Channel, SensorConfig, CarConfig, CarsConfig, CarFormState } from '@/types/carConfigTypes'
+import { Channel, SensorConfig, CarConfig, CarsConfig, CarFormState, DefaultFormState } from '@/types/carConfigTypes'
 import  ChannelCard  from '@/components/ui/channelCard'
 import FormField from '@/components/ui/formField'
 
-export const defaultFormState: CarFormState = {
-  active: true,
-  theme: "default",
-  weight: "30",
-  powerPlant: "gasoline",
-  selectedDriver: "",
-  selectedRace: "Indy 500",
-};
-
 function ConfigContent() {
   const [allCarsConfig, setAllCarsConfig] = useState<CarsConfig>({});
-  const [formState, setFormState] = useState<CarFormState>(defaultFormState);
+  const [formState, setFormState] = useState<CarFormState>(DefaultFormState);
   const [channels, setChannels] = useState<Channel[]>([
     {
       id: 1,
