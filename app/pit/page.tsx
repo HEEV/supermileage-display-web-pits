@@ -11,7 +11,6 @@ export default function PitCrewMenu() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 text-white px-8 py-12">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Dashboard Card */}
         <div className="bg-zinc-900/50 backdrop-blur rounded-2xl border border-zinc-800 p-8 shadow-xl">
         
           <div className="flex items-center gap-4 mb-6">
@@ -33,7 +32,6 @@ export default function PitCrewMenu() {
             <option value="karch">Karcharius</option>
             <option value="sting">Sting</option>
           </select>
-
           <button
             disabled={!selectedCar}
             onClick={() => router.push(`/dashboard?car=${selectedCar}`)}
