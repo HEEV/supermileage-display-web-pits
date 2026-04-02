@@ -15,6 +15,29 @@ interface Channel {
   min: string;
   max: string;
 }
+interface SensorConfig {
+  name?: string;
+  unit?: string;
+  conversion_factor?: number;
+  input_type?: string;
+  limits?: {
+    min?: number;
+    max?: number;
+  };
+}
+
+interface CarConfig {
+  active?: boolean;
+  theme?: string;
+  selected_driver?: string;
+  metadata?: {
+    weight?: number;
+    power_plant?: string;
+  };
+  sensors?: Record<string, SensorConfig>;
+}
+ 
+type CarsConfig = Record<string, CarConfig>;
 
 const labelMap: Record<string, string> = {
   name: 'Name',
@@ -25,11 +48,18 @@ const labelMap: Record<string, string> = {
   max: 'Max Limit'
 };
 
-const fields = ['name','unit','conversionFactor','inputType','min','max'];
+const fields: (keyof Channel)[] = [
+  'name',
+  'unit',
+  'conversionFactor',
+  'inputType',
+  'min',
+  'max'
+];
 
 function ConfigContent() {
 
-  const [allCarsConfig, setAllCarsConfig] = useState<Record<string, any>>({});
+  const [allCarsConfig, setAllCarsConfig] = useState<CarsConfig>({});
   const searchParams = useSearchParams();
   const router = useRouter();
   const selectedCar = searchParams.get('car') || 'karch';
@@ -94,7 +124,7 @@ function ConfigContent() {
       };
     });
 
-    const updatedCar = {
+    const updatedCar: CarConfig = {
       active,
       theme,
       selected_driver: selectedDriver,
@@ -102,15 +132,15 @@ function ConfigContent() {
         weight: parseFloat(weight),
         power_plant: powerPlant,
       },
-      sensors: sensorsConfig,
+      sensors: sensorsConfig as Record<string, SensorConfig>,
     };
   
-    const updatedAllCars = {
+    const updatedAllCars: CarsConfig = {
       ...allCarsConfig,
       [selectedCar]: updatedCar,
     };
 
-    publish(`cars/${selectedCar}/config`, JSON.stringify({"cars": updatedAllCars}), {
+    publish(`cars/config`, JSON.stringify({"cars": updatedAllCars}), {
       retain: true,
       qos: 1
     });
@@ -122,33 +152,30 @@ function ConfigContent() {
     if (!lastMessage) return;
   
     try {
-      const parsed = JSON.parse(lastMessage.message);
-      const cars = parsed.cars ?? parsed;
-      const carConfig = (parsed.cars ?? parsed)[selectedCar];
+      const parsed = JSON.parse(lastMessage.message) as {cars?: CarsConfig};
+      const cars: CarsConfig = 'cars' in parsed ? parsed.cars ?? {} : parsed;
+      const carConfig = cars[selectedCar];
   
       if (!carConfig) return;
   
+      const newChannels: Channel[] = carConfig.sensors
+      ? Object.values(carConfig.sensors).map((ch, i) => ({
+          id: i + 1,
+          name: ch.name ?? "",
+          unit: ch.unit ?? "",
+          conversionFactor: String(ch.conversion_factor ?? "0"),
+          inputType: ch.input_type ?? "analog",
+          min: String(ch.limits?.min ?? "0"),
+          max: String(ch.limits?.max ?? "0"),
+        }))
+      : [];
       setActive(carConfig.active ?? true);
       setTheme(carConfig.theme ?? "default");
       setSelectedDriver(carConfig.selected_driver ?? "");
       setWeight(String(carConfig.metadata?.weight ?? "0"));
       setPowerPlant(carConfig.metadata?.power_plant ?? "gasoline");
-  
-      // Load sensors
-      if (carConfig.sensors) {
-        const loadedChannels = Object.values(carConfig.sensors).map((ch: any, i) => ({
-          id: i + 1,
-          name: ch.name || "",
-          unit: ch.unit || "",
-          conversionFactor: String(ch.conversion_factor ?? "0"),
-          inputType: ch.input_type || "analog",
-          min: String(ch.limits?.min ?? "0"),
-          max: String(ch.limits?.max ?? "0"),
-        }));
-  
-        setChannels(loadedChannels);
-        setAllCarsConfig(cars);
-      }
+      setChannels(newChannels);
+      setAllCarsConfig(cars);
     } catch (err) {
       console.error("Failed to parse config:", err);
     }

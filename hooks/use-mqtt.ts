@@ -16,7 +16,6 @@ const createClientId = (prefix: string) => {
 
 export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
   const clientRef = useRef<MqttClient | null>(null);
-  //const [client, setClient] = useState<MqttClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<{ topic: string; message: string } | null>(null);
 
