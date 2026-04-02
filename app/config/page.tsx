@@ -3,6 +3,7 @@
 import BackButton from '@/components/ui/backButton'
 import { Trash2 } from "lucide-react"
 import { useMqtt } from '@/hooks/use-mqtt'
+import { getAuthToken } from '@/lib/auth'
 import { Suspense, useState, useMemo, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 
@@ -76,7 +77,7 @@ const fields: (keyof Channel)[] = [
   'max'
 ];
 
-function ConfigContent() {
+function ConfigContent({ authToken }: { authToken: string }) {
   const [allCarsConfig, setAllCarsConfig] = useState<CarsConfig>({});
   const [formState, setFormState] = useState<CarFormState>(defaultFormState);
   const [channels, setChannels] = useState<Channel[]>([
@@ -105,9 +106,9 @@ function ConfigContent() {
   const selectedCar = searchParams.get('car') || 'karch';
 
   const mqttOptions = useMemo(() => ({
-    username: process.env.NEXT_PUBLIC_MQTT_USERNAME as string,
-    password: process.env.NEXT_PUBLIC_MQTT_PASSWORD as string,
-  }), []);
+    username: authToken,
+    password: '',
+  }), [authToken]);
 
   const { publish, isConnected, lastMessage } = useMqtt({
     uri: process.env.NEXT_PUBLIC_MQTT_URL as string,
@@ -369,9 +370,26 @@ function ConfigContent() {
 }
 
 export default function ConfigPage() {
+  const router = useRouter();
+  const [authToken, setAuthToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = getAuthToken();
+    if (!token) {
+      router.replace('/login');
+      return;
+    }
+
+    setAuthToken(token);
+  }, [router]);
+
+  if (!authToken) {
+    return <div className="p-4">Loading config...</div>;
+  }
+
   return (
     <Suspense fallback={<div className="p-4">Loading config...</div>}>
-      <ConfigContent />
+      <ConfigContent authToken={authToken} />
     </Suspense>
   );
 }

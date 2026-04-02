@@ -1,26 +1,27 @@
 "use client";
 
 import BackButton from "@/components/ui/backButton"
+import { getAuthToken } from "@/lib/auth"
 import { useMqtt } from "@/hooks/use-mqtt"
-import { Suspense, useMemo } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
+import { Suspense, useEffect, useMemo, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 
-function DashboardContent() {
+function DashboardContent({ authToken }: { authToken: string }) {
   const searchParams = useSearchParams()
   const router = useRouter()
-  
   const selectedCar = searchParams.get('car') || 'karch'
 
+  // TODO: the problem is probably not here, but with how the backend auth server returns. Probably not what the mosquitto broker plugin expects.
   const mqttOptions = useMemo(() => ({
-    username: process.env.NEXT_PUBLIC_MQTT_USERNAME as string,
-    password: process.env.NEXT_PUBLIC_MQTT_PASSWORD as string,
-  }), []);
+    username: authToken,
+    password: ''
+  }), [authToken])
 
   const { isConnected, lastMessage } = useMqtt({
     uri: process.env.NEXT_PUBLIC_MQTT_URL as string,
     topic: `cars/${selectedCar}/data`,
     options: mqttOptions
-  });
+  })
 
   const carData = useMemo(() => {
     if (!lastMessage) return null;
@@ -69,9 +70,26 @@ function DashboardContent() {
 }
 
 export default function DashboardPage() {
+  const router = useRouter()
+  const [authToken, setAuthToken] = useState<string | null>(null)
+
+  useEffect(() => {
+    const token = getAuthToken()
+    if (!token) {
+      router.replace('/login')
+      return
+    }
+
+    setAuthToken(token)
+  }, [router])
+
+  if (!authToken) {
+    return <div style={{ padding: '2rem' }}>Loading dashboard...</div>
+  }
+
   return (
     <Suspense fallback={<div style={{ padding: '2rem' }}>Loading dashboard...</div>}>
-      <DashboardContent />
+      <DashboardContent authToken={authToken} />
     </Suspense>
-  );
+  )
 }
