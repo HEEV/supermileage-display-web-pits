@@ -2,13 +2,18 @@
 
 import BackButton from "@/components/ui/backButton"
 import { useMqtt } from "@/hooks/use-mqtt"
-import { Suspense, useMemo } from "react"
+import { Suspense, useMemo, useState, useRef, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
+import Speedometer from "@/components/ui/speedometer";
+import TrackView from "@/components/trackView";
+import WindSpeedometer from "@/components/ui/windSpeedometer";
+import TempGauge from "@/components/ui/tempGauge";
 
 function DashboardContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  
+  const [startNewRace, setStartNewRace] = useState(false);
+  const prevDistance = useRef<number | null>(null);
   const selectedCar = searchParams.get('car') || 'karch'
 
   const mqttOptions = useMemo(() => ({
@@ -34,36 +39,70 @@ function DashboardContent() {
     }
   }, [lastMessage]);
 
+  useEffect(() => {
+    if (carData?.distance_traveled !== undefined) {
+      if (
+        prevDistance.current !== null &&
+        carData.distance_traveled < prevDistance.current
+      ) {
+        // reset detected
+        setStartNewRace(true);
+        setTimeout(() => setStartNewRace(false), 100);
+      }
+
+      prevDistance.current = carData.distance_traveled;
+    }
+  }, [carData?.distance_traveled]);
+
   return (
     <div style={{ padding: '2rem', position: 'relative'}}>
       <BackButton />
-      <select 
+      {/* <select 
         value={selectedCar} 
         onChange={(e) => router.push(`?car=${e.target.value}`)}
         className="mb-4 p-2 border rounded text-white"
       >
         <option value="karch">Karcharius</option>
         <option value="sting">Sting</option>
-      </select>
+      </select> */}
+      <h1 className="text-4xl font-bold mb-6">
+        {selectedCar === 'karch' ? 'Karcharius' : 'Sting'} Dashboard
+      </h1>
       <p>Status: {isConnected ? "Connected" : "Disconnected"}</p>
-      <p>
-        Speed: {carData ? carData.speed : "--"} mph
-      </p>
-      <p>
-        Air Speed: {carData ? carData.airspeed : "--"} mph
-      </p>
-      <p>
-        Engine Temp: {carData ? carData.engine_temp : "--"} °F
-      </p>
-      <p>
-        Rad Temp: {carData ? carData.rad_temp : "--"} °F
-      </p>
-      <p>
-        Distance Traveled: {carData ? carData.distance_traveled : "--"}
-      </p>  
-      <p>
-        Time: {carData ? carData.time : "--"} 
-      </p>
+      <Speedometer
+        value={carData?.speed || 0}
+        min={0}
+        max={100}
+        unit="MPH"
+        burnCountdownTime={10000}
+        coastCountdownTime={5000}
+        animate={true}
+      />
+      <WindSpeedometer
+        windSpeed={Math.trunc(carData?.airspeed * 10) / 10 || 0}
+        relativeSpeed={Math.trunc((carData?.speed - carData?.airspeed) * 10) / 10 || 0}
+        speedType={'real'}
+        noBackground
+        windDir={180}
+        displayUnits={true}
+      />
+      <TempGauge label="Engine Temp" value={carData?.engine_temp || 0} max={300} />
+      <TempGauge label="Rad Temp" value={carData?.rad_temp || 0} max={250} />
+      <TrackView
+        trackName='ShellTrackFixed'
+        distanceTraveled={carData?.distance_traveled || 0}
+        scale={100}
+        resetTriggered={startNewRace}
+      />  
+      <button
+        onClick={() => {
+          setStartNewRace(true);
+          setTimeout(() => setStartNewRace(false), 100);
+        }}
+        className="bg-red-600 px-3 py-1 rounded"
+      >
+        Reset Track
+      </button>
     </div>
   );
 }

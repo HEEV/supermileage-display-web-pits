@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+//import "./styles.css";
+import "./colors.css";
 import Image from "next/image";
 import Stinger from "@/public/stinger.png";
 import { Toaster } from "@/components/ui/toaster";
