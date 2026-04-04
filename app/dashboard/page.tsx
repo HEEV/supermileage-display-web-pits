@@ -62,7 +62,6 @@ function DashboardContent() {
 
   const sendSimData = (simData: SimulationDataForm) => {
     publish(`cars/${selectedCar}/sim`, JSON.stringify({ simData: simData }), {
-      retain: true,
       qos: 1
     });
   };
