@@ -4,7 +4,7 @@ import BackButton from "@/components/ui/backButton"
 import { useMqtt } from "@/hooks/use-mqtt"
 import { Suspense, useMemo, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { pyRuntimeConnect, pyRunSimulation, pyRuntimeDisconnect } from "./runPython";
+import { pyRuntimeConnect, pyRunSimulation, pyRuntimeDisconnect } from "../../lib/runPython";
 import { SimulationDataForm } from "@/types/carConfigTypes";
 
 function DashboardContent() {
