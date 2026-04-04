@@ -30,12 +30,12 @@ export default function WindSpeedometer(props: {
   return (
     <div className="flex flex-col items-center gap-1">
       {showReal && (
-        <div className="text-[var(--color-text-secondary)] text-sm font-bold uppercase mb-1">
+        <div className="text-cyan-400 text-sm font-bold uppercase mb-1">
           Headwind Speed
         </div>
       )}
       {showRelative && (
-        <div className="text-[var(--color-text-secondary)] text-sm font-bold uppercase mb-1">
+        <div className="text-cyan-400 text-sm font-bold uppercase mb-1">
           Relative Speed
         </div>
       )}

@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import Dashboard from "@/components/ui/dashboard";
 
-export default function Home() {
-  redirect("/dashboard?car=karch");
+export default function PublicDashboardPage() {
+  return <Dashboard mode="public" />;
 }

@@ -133,7 +133,7 @@ function ConfigContent() {
     setAllCarsConfig(updatedAllCars);
   };
   return (
-    <div className="h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 p-4 overflow-hidden">
+    <div className="h-screen bg-black p-4 overflow-hidden">
       <div className="max-w-7xl mx-auto h-full flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">

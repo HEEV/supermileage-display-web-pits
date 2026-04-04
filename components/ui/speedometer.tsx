@@ -143,7 +143,7 @@ export default function Speedometer(props: {
             : coastRingStyle
         }
       />
-      <div className="absolute w-[80%] h-[80%] rounded-full bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 z-10" />
+      <div className="absolute w-[80%] h-[80%] rounded-full bg-black z-10" />
 
       {/* Center */}
       <div className="absolute grid place-items-center text-center z-10">
