@@ -1,15 +1,7 @@
-export async function POST(req: Request) {
-  const body = await req.json();
+export async function POST() {
 
-  const res = await fetch("http://localhost:8000/runtime_dis", {
-    //PYTHON_API_URL=https://internal-api.myapp.com
-    //PYTHON_API_URL=http://python-service:8000
-    //PYTHON_API_URL=http://localhost:8000
+  const res = await fetch(`${process.env.NEXT_PUBLIC_PYTHON_API_URL}/runtime_dis`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
   });
 
   const text = await res.text();

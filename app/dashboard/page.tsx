@@ -5,6 +5,7 @@ import { useMqtt } from "@/hooks/use-mqtt"
 import { Suspense, useMemo, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { pyRuntimeConnect, pyRunSimulation, pyRuntimeDisconnect } from "./runPython";
+import { SimulationDataForm } from "@/types/carConfigTypes";
 
 function DashboardContent() {
   const searchParams = useSearchParams()
@@ -19,7 +20,7 @@ function DashboardContent() {
     password: process.env.NEXT_PUBLIC_MQTT_PASSWORD as string,
   }), []);
 
-  const { isConnected, lastMessage } = useMqtt({
+  const { publish, isConnected, lastMessage } = useMqtt({
     uri: process.env.NEXT_PUBLIC_MQTT_URL as string,
     topic: `cars/${selectedCar}/data`,
     options: mqttOptions
@@ -44,16 +45,26 @@ function DashboardContent() {
     if(carData){ // carData needs to exist
       // track length for Shell: 2.39072566 * 5280 ft (4 laps total)
       //TODO - what units is distance_traveled? does this calculation need to be adjusted (track length in ft)
+      console.log("Before Fuel: ", estFuelCost);
+      console.log("Before Distance: ", carData.distance_traveled);
       const lapNum = Math.ceil(carData.distance_traveled / (2.39072566 * 5280)); //hardcoded for Shell Track
       console.log("Lap Number: ", lapNum);
-      const result = await pyRunSimulation("simulation_data", "Gold Lightning II", "Ima Placeholder", 
-                                           "indy", 70, 14.6957, carData.speed, carData.time, estFuelCost, 0, lapNum);
+      const result = await pyRunSimulation("simulation_data", "Gold Lightning II", "Ima Placeholder", "indy", 
+                                           70, 14.6957, carData.speed, carData.time, estFuelCost, 0, lapNum);
       console.log("Simulation Finished.");
       setEstFuelCost(result[0]);
+      console.log("After Fuel: ", estFuelCost);
       const simData = result[1];
-      //TODO - How do I send the data to the car.
+      sendSimData(simData);
       console.log("Data: " + simData[0]);
     }
+  };
+
+  const sendSimData = (simData: SimulationDataForm) => {
+    publish(`cars/${selectedCar}/sim`, JSON.stringify({ simData: simData }), {
+      retain: true,
+      qos: 1
+    });
   };
 
   async function connectRuntime(){
