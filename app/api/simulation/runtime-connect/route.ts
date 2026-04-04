@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 export async function POST() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_PYTHON_API_URL}/runtime_con`, {
     method: "POST",
