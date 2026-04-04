@@ -178,6 +178,7 @@ export default function Dashboard({ mode, carId }: DashboardProps) {
                             //FIXME: engine on status isn't parsed currently...
                             currentStatus={SegmentType.BURN}
                             simulationOutput={SAMPLE_SIMULATION}
+                            //FIXME: the timer_reset_button isn't parsed currently
                             resetTriggered={isTruthyStatus(startNewRace) ?? false}
                         />
                     </div>
@@ -195,15 +196,6 @@ export default function Dashboard({ mode, carId }: DashboardProps) {
                         displayUnits
                         />
                     </div>
-                    <button
-                        onClick={() => {
-                            setStartNewRace(true);
-                            setTimeout(() => setStartNewRace(false), 100);
-                        }}
-                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
-                        >
-                        Reset Race
-                    </button>
                     </div>
                 </div>
             </div>
