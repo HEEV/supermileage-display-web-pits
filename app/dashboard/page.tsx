@@ -67,6 +67,7 @@ function DashboardContent() {
   };
 
   async function connectRuntime(){
+    console.log("Deployment Connection Test");
     const connected = await pyRuntimeConnect();
     setRuntimeConnected(connected);
     console.log("Connection Result: " + connected); 
