@@ -53,6 +53,7 @@ export default function BurnCoast(props: {
   useEffect(() => {
     if (simulationOutput && simulationOutput.length > 0) {
       const simProgress = convertSimulationToProgress(simulationOutput, TRACKS[CURRENT_TRACK].length);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setSimulatedProgress(simProgress);
     }
   }, [simulationOutput]);
@@ -61,10 +62,15 @@ export default function BurnCoast(props: {
   useEffect(() => {
     if (resetTriggered) {
       console.log('New race started');
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setNewRaceOffset(currentDistance);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setPrevDist(currentDistance); // Set to current distance, not 0
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setLiveProgress([[{progress_percent: 0, status: currentStatus}]]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setCurrentSegment(0);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setCurrentLap(1);
       prevStatusRef.current = currentStatus;
     }
@@ -88,6 +94,7 @@ export default function BurnCoast(props: {
       if (segments.length < newLap) {
         segments.push([{progress_percent: 0, status: currentStatus}]);
         segmentIndex = 0;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         setCurrentSegment(0);
       }
 

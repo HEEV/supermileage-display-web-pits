@@ -36,9 +36,6 @@ function isTruthyStatus(value: unknown): boolean | undefined {
 }
 
 export default function Dashboard({ mode, carId }: DashboardProps) {
- //unsure of how to trigger this in this pit crew app
-  const [startNewRace, setStartNewRace] = useState(false);
-  const prevCar = useRef<string | null>(null);
   const mqttOptions = useMemo(() => ({
     username: process.env.NEXT_PUBLIC_MQTT_USERNAME as string,
     password: process.env.NEXT_PUBLIC_MQTT_PASSWORD as string,
@@ -81,6 +78,7 @@ export default function Dashboard({ mode, carId }: DashboardProps) {
 
   useEffect(() => {
     if (mode === "public" && availableCars.length === 1) {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
       setSelectedCar(availableCars[0]);
     }
   }, [availableCars, mode]);
@@ -148,7 +146,8 @@ export default function Dashboard({ mode, carId }: DashboardProps) {
                         trackName='ShellTrackFixed'
                         distanceTraveled={carData?.distance_traveled || 0}
                         scale={100}
-                        resetTriggered={startNewRace}
+                        //FIXME: the timer_reset_button isn't parsed currently
+                        resetTriggered={true}
                         />
                     </div>
                     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 space-y-3">
@@ -179,7 +178,7 @@ export default function Dashboard({ mode, carId }: DashboardProps) {
                             currentStatus={SegmentType.BURN}
                             simulationOutput={SAMPLE_SIMULATION}
                             //FIXME: the timer_reset_button isn't parsed currently
-                            resetTriggered={isTruthyStatus(startNewRace) ?? false}
+                            resetTriggered={true}
                         />
                     </div>
                     </div>
