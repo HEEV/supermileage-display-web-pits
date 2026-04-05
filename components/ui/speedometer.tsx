@@ -30,9 +30,9 @@ export default function Speedometer(props: {
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   useEffect(() => {
-    if (props.animate) {
+    if (!props.animate) return;
       animateSegments();
-    }
+      
   }, [props.animate]);
 
   const animateSegments = async () => {

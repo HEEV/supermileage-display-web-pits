@@ -56,15 +56,15 @@ function ConfigContent() {
       const carConfig = cars[selectedCar];
 
       if (!carConfig) return;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      setFormState({
+      setFormState(prev => ({
+        ...prev,
         active: carConfig.active ?? true,
         theme: carConfig.theme ?? "default",
         selectedDriver: carConfig.selected_driver ?? "",
         selectedRace: "Indy 500",
         weight: String(carConfig.metadata?.weight ?? "0"),
         powerPlant: carConfig.metadata?.power_plant ?? "gasoline",
-      });
+      }));
 
       if (carConfig.sensors) {
         setChannels(

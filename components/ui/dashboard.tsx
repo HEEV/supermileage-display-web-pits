@@ -5,7 +5,7 @@ import BurnCoast from "./burnCoast";
 import { SAMPLE_SIMULATION } from "../../constants";
 import { SegmentType } from '../../types/simulationTypes';
 import { useMqtt } from "@/hooks/use-mqtt"
-import { useMemo, useState, useRef, useEffect } from "react"
+import { useMemo, useState } from "react"
 import Speedometer from "@/components/ui/speedometer";
 import TrackView from "@/components/trackView";
 import WindSpeedometer from "@/components/ui/windSpeedometer";
@@ -25,14 +25,6 @@ function parseMessage(msg?: string) {
   } catch {
     return null;
   }
-}
-
-function isTruthyStatus(value: unknown): boolean | undefined {
-    if (value === undefined || value === null) {
-      return undefined;
-    }
-  
-    return value === 1 || value === true;
 }
 
 export default function Dashboard({ mode, carId }: DashboardProps) {
@@ -74,20 +66,23 @@ export default function Dashboard({ mode, carId }: DashboardProps) {
         ].filter(Boolean) as ("karch" | "sting")[]
       : [];
 
-  const [selectedCar, setSelectedCar] = useState<"karch" | "sting" | null>(null);
+  const [manualSelection, setManualSelection] = useState<"karch" | "sting" | null>(null);
 
-  useEffect(() => {
-    if (mode === "public" && availableCars.length === 1) {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-      setSelectedCar(availableCars[0]);
-    }
-  }, [availableCars, mode]);
-
+  const selectedCar =
+    manualSelection ??
+    (availableCars.length === 1 ? availableCars[0] : null);
 
   const activeCar =
     mode === "public"
       ? selectedCar ?? availableCars[0] ?? null
       : carId ?? null;
+
+  // useEffect(() => {
+  //   if (mode === "public" && availableCars.length === 1) {
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  //     setSelectedCar(availableCars[0]);
+  //   }
+  // }, [availableCars, mode]);
 
   const carData =
     mode === "public"
@@ -129,7 +124,7 @@ export default function Dashboard({ mode, carId }: DashboardProps) {
                         <select
                             value={selectedCar ?? ""}
                             onChange={(e) =>
-                            setSelectedCar(e.target.value as "karch" | "sting")
+                            setManualSelection(e.target.value as "karch" | "sting")
                             }
                             className="bg-zinc-800 border border-zinc-700 text-white px-3 py-2 rounded"
                         >
