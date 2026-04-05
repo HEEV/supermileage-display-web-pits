@@ -62,7 +62,6 @@ export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
 
     mqttClient.on('message', (t, msg) => {
         if (!cancelled) setLastMessage({ topic: t, message: msg.toString() });
-        console.log('RECEIVED:', topic, msg.toString());
       });
     clientRef.current = mqttClient;
     return () => {
@@ -77,7 +76,6 @@ export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
       if (clientRef.current?.connected) {
         clientRef.current.publish(targetTopic, message, pubOptions || {}, (err) => {
           if (err) console.error("Publish error:", err);
-          else console.log("Published to", targetTopic);
         });
       } else {
         console.warn("Not connected. client:", clientRef.current, "connected:", clientRef.current?.connected);
