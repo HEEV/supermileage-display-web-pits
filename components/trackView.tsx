@@ -11,12 +11,15 @@ export default function TrackView(props: {
   const [distOffset, setDistOffset] = useState(0);
 
   // If reset button is active, zero out the distance traveled.
+  const prevReset = useRef(false);
 
   useEffect(() => {
-    if (props.resetTriggered) {
-      setDistOffset(props.distanceTraveled);
+    if (props.resetTriggered && !prevReset.current) {
+      setDistOffset((prev) => props.distanceTraveled);
     }
-  }, [props.resetTriggered, props.distanceTraveled]);
+
+    prevReset.current = !!props.resetTriggered;
+  }, [props.resetTriggered]);
 
   const trackTransition = { duration: 0.5, yoyo: Infinity };
   const pathRef = useRef<SVGPathElement>(null);
