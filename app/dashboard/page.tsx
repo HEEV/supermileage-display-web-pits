@@ -78,9 +78,16 @@ function DashboardContent() {
     console.log("Connection Result: " + connected); 
   };
 
+  async function handleBack(){
+    if (runtimeConnected) {
+      await disconnectRuntime();
+    }
+    router.push('/pit');
+  };
+
   return (
     <div style={{ padding: '2rem', position: 'relative'}}>
-      <BackButton />
+      <BackButton onClick={handleBack}/>
       <select 
         value={selectedCar} 
         onChange={(e) => router.push(`?car=${e.target.value}`)}
