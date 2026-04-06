@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+
 'use client'
 
 import BackButton from '@/components/ui/backButton'
@@ -56,15 +58,15 @@ function ConfigContent() {
       const carConfig = cars[selectedCar];
 
       if (!carConfig) return;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      setFormState({
+      setFormState(prev => ({
+        ...prev,
         active: carConfig.active ?? true,
         theme: carConfig.theme ?? "default",
         selectedDriver: carConfig.selected_driver ?? "",
         selectedRace: "Indy 500",
         weight: String(carConfig.metadata?.weight ?? "0"),
         powerPlant: carConfig.metadata?.power_plant ?? "gasoline",
-      });
+      }));
 
       if (carConfig.sensors) {
         setChannels(
@@ -133,7 +135,7 @@ function ConfigContent() {
     setAllCarsConfig(updatedAllCars);
   };
   return (
-    <div className="h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 p-4 overflow-hidden">
+    <div className="h-screen bg-black p-4 overflow-hidden">
       <div className="max-w-7xl mx-auto h-full flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">

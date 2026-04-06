@@ -1,0 +1,191 @@
+'use client'
+
+import BackButton from "./backButton";
+import BurnCoast from "./burnCoast";
+import { SAMPLE_SIMULATION } from "../../constants";
+import { SegmentType } from '../../types/simulationTypes';
+import { useMqtt } from "@/hooks/use-mqtt"
+import { useMemo, useState } from "react"
+import Speedometer from "@/components/ui/speedometer";
+import TrackView from "@/components/trackView";
+import WindSpeedometer from "@/components/ui/windSpeedometer";
+import TempGauge from "@/components/ui/tempGauge";
+
+type DashboardMode = "public" | "single";
+
+interface DashboardProps {
+  mode: DashboardMode;
+  carId?: "karch" | "sting";
+}
+
+function parseMessage(msg?: string) {
+  if (!msg) return null;
+  try {
+    return JSON.parse(msg.replace(/'/g, '"'));
+  } catch {
+    return null;
+  }
+}
+
+export default function Dashboard({ mode, carId }: DashboardProps) {
+  const mqttOptions = useMemo(() => ({
+    username: process.env.NEXT_PUBLIC_MQTT_USERNAME as string,
+    password: process.env.NEXT_PUBLIC_MQTT_PASSWORD as string,
+  }), []);
+
+  const karch = useMqtt({
+    uri: process.env.NEXT_PUBLIC_MQTT_URL as string,
+    topic: "cars/karch/data",
+    options: mqttOptions,
+    enabled: mode === "public", 
+  });
+
+  const sting = useMqtt({
+    uri: process.env.NEXT_PUBLIC_MQTT_URL as string,
+    topic: "cars/sting/data",
+    options: mqttOptions,
+    enabled: mode === "public",
+  });
+
+  const single = useMqtt({
+    uri: process.env.NEXT_PUBLIC_MQTT_URL as string,
+    topic: `cars/${carId}/data`,
+    options: mqttOptions,
+    enabled: mode === "single",
+  });
+
+  const karchData = parseMessage(karch.lastMessage?.message);
+  const stingData = parseMessage(sting.lastMessage?.message);
+  const singleData = parseMessage(single.lastMessage?.message);
+
+  const availableCars =
+    mode === "public"
+      ? [
+          karch.isConnected && karchData ? "karch" : null,
+          sting.isConnected && stingData ? "sting" : null,
+        ].filter(Boolean) as ("karch" | "sting")[]
+      : [];
+
+  const [manualSelection, setManualSelection] = useState<"karch" | "sting" | null>(null);
+
+  const selectedCar =
+    manualSelection ??
+    (availableCars.length === 1 ? availableCars[0] : null);
+
+  const activeCar =
+    mode === "public"
+      ? selectedCar ?? availableCars[0] ?? null
+      : carId ?? null;
+
+  const carData =
+    mode === "public"
+      ? activeCar === "karch"
+        ? karchData
+        : activeCar === "sting"
+        ? stingData
+        : null
+      : singleData;
+
+    if (!activeCar || !carData) {
+        return (
+            <div className="min-h-screen bg-black text-white flex items-center justify-center">
+                <div className="text-center">
+                    <h1 className="text-2xl font-bold mb-2">No Car Connected</h1>
+                    <p className="text-zinc-400">Waiting for telemetry...</p>
+                </div>
+            </div>
+        );
+    }
+    else {  
+        return (
+            <div className="min-h-screen bg-black text-white p-6">
+                <div className="grid grid-cols-3 items-center mb-6">
+                    <div className="flex items-center">
+                        {mode === "single" && <BackButton />}
+                    </div>
+                    <div className="flex justify-center">
+                        <h1 className="text-3xl font-bold text-center">
+                        {activeCar === "karch"
+                            ? "Karcharius Dashboard"
+                            : activeCar === "sting"
+                            ? "Sting Dashboard"
+                            : "No Car Connected"}
+                        </h1>
+                    </div>
+                    <div className="flex justify-end">
+                        {mode === "public" && availableCars.length === 2 && (
+                        <select
+                            value={selectedCar ?? ""}
+                            onChange={(e) =>
+                            setManualSelection(e.target.value as "karch" | "sting")
+                            }
+                            className="bg-zinc-800 border border-zinc-700 text-white px-3 py-2 rounded"
+                        >
+                            <option value="karch">Karcharius</option>
+                            <option value="sting">Sting</option>
+                        </select>
+                        )}
+                    </div>
+                </div>
+                <div className="grid grid-cols-[250px_1fr_250px] gap-6">
+                    <div className="flex flex-col gap-4">
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3">
+                        <TrackView
+                        trackName='ShellTrackFixed'
+                        distanceTraveled={carData?.distance_traveled || 0}
+                        scale={100}
+                        //FIXME: the timer_reset_button isn't parsed currently
+                        resetTriggered={true}
+                        />
+                    </div>
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 space-y-3">
+                        <h2 className="text-cyan-400 text-xs font-bold tracking-wider">
+                        VEHICLE STATUS
+                        </h2>
+                        <div className="grid grid-cols-2 gap-2">
+                        <TempGauge label="Engine" value={carData?.engine_temp || 0} />
+                        <TempGauge label="Radiator" value={carData?.rad_temp || 0} />
+                        </div>
+                    </div>
+                    </div>
+                    <div className="flex flex-col items-center gap-6">
+                    <Speedometer
+                        value={carData?.speed || 0}
+                        min={0}
+                        max={100}
+                        unit="MPH"
+                        animate
+                    />
+                    <div className="w-full max-w-xl bg-zinc-900 border border-zinc-800 rounded-lg p-3">
+                        <div className="text-cyan-400 text-xs font-bold text-center mb-2">
+                        SIMULATION
+                        </div>
+                        <BurnCoast
+                            currentDistance={carData?.distance_traveled || 5}
+                            //FIXME: engine on status isn't parsed currently...
+                            currentStatus={SegmentType.BURN}
+                            simulationOutput={SAMPLE_SIMULATION}
+                            //FIXME: the timer_reset_button isn't parsed currently
+                            resetTriggered={true}
+                        />
+                    </div>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3">
+                        <WindSpeedometer
+                        windSpeed={Math.trunc(carData?.airspeed * 10) / 10 || 0}
+                        relativeSpeed={
+                            Math.trunc((carData?.speed - carData?.airspeed) * 10) / 10 || 0
+                        }
+                        speedType="real"
+                        noBackground
+                        windDir={180}
+                        displayUnits
+                        />
+                    </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+}

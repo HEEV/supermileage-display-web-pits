@@ -9,9 +9,9 @@ export default function PitCrewMenu() {
   const [selectedCar, setSelectedCar] = useState("")
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 text-white px-8 py-12">
+    <div className="min-h-screen bg-black text-white px-8 py-12">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-zinc-900/50 backdrop-blur rounded-2xl border border-zinc-800 p-8 shadow-xl">
+        <div className="bg-black rounded-2xl border border-zinc-800 p-8 shadow-xl">
         
           <div className="flex items-center gap-4 mb-6">
             <div className="bg-red-600/20 p-4 rounded-xl">
@@ -27,7 +27,7 @@ export default function PitCrewMenu() {
           <select
             value={selectedCar}
             onChange={(e) => setSelectedCar(e.target.value)}
-            className="w-full mb-4 bg-zinc-800 border border-zinc-700 text-white p-2 rounded"
+            className="w-full mb-4 bg-black border border-zinc-700 text-white p-2 rounded"
           >
             <option value="karch">Karcharius</option>
             <option value="sting">Sting</option>
@@ -40,7 +40,7 @@ export default function PitCrewMenu() {
             View Status Dashboard
           </button>
         </div>
-        <div className="bg-zinc-900/50 backdrop-blur rounded-2xl border border-zinc-800 p-8 shadow-xl">
+        <div className="bg-black backdrop-blur rounded-2xl border border-zinc-800 p-8 shadow-xl">
           
           <div className="flex items-center gap-4 mb-6">
             <div className="bg-blue-600/20 p-4 rounded-xl">
@@ -56,7 +56,7 @@ export default function PitCrewMenu() {
           <select
             value={selectedCar}
             onChange={(e) => setSelectedCar(e.target.value)}
-            className="w-full mb-4 bg-zinc-800 border border-zinc-700 text-white p-2 rounded"
+            className="w-full mb-4 bg-black border border-zinc-700 text-white p-2 rounded"
           >
             <option value="karch">Karcharius</option>
             <option value="sting">Sting</option>
