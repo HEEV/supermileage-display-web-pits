@@ -3,7 +3,7 @@ export const runtime = 'edge';
 export async function POST(req: Request) {
   const body = await req.json();
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_PYTHON_API_URL}/run_sim`, {
+  const res = await fetch("https://supermileage.cedarville.edu/api/run_sim", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

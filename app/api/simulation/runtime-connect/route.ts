@@ -1,7 +1,7 @@
 export const runtime = 'edge';
 
 export async function POST() {
-  const res = await fetch(`https://supermileage.cedarville.edu/api/runtime_con`, {
+  const res = await fetch("https://supermileage.cedarville.edu/api/runtime_con", {
     method: "POST",
   });
 
