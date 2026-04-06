@@ -18,6 +18,7 @@ export async function runPythonTest(input: string) {
 }
 
 export async function pyRuntimeConnect() {
+  console.log(process.env.NEXT_PUBLIC_PYTHON_API_URL);
   const res = await fetch("/../api/simulation/runtime-connect", {
     method: "POST",
   });
