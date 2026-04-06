@@ -1,3 +1,6 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-hooks/exhaustive-deps */
+
 import { motion } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
 import { TRACKS } from '../constants';

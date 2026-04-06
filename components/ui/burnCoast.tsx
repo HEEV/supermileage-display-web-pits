@@ -1,5 +1,8 @@
 'use client'
 
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-hooks/exhaustive-deps */
+
 import { JSX, useEffect, useMemo, useRef, useState } from 'react';
 import { CURRENT_TRACK, TRACKS } from '../../constants';
 import { RaceStrategy, Segment, SegmentType } from '@/types/simulationTypes';

@@ -77,13 +77,6 @@ export default function Dashboard({ mode, carId }: DashboardProps) {
       ? selectedCar ?? availableCars[0] ?? null
       : carId ?? null;
 
-  // useEffect(() => {
-  //   if (mode === "public" && availableCars.length === 1) {
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  //     setSelectedCar(availableCars[0]);
-  //   }
-  // }, [availableCars, mode]);
-
   const carData =
     mode === "public"
       ? activeCar === "karch"
