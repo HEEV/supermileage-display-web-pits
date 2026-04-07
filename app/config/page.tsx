@@ -2,14 +2,16 @@
 
 import BackButton from '@/components/ui/backButton'
 import { useMqtt } from '@/hooks/use-mqtt'
-import { getAuthToken } from '@/lib/auth'
-import { Suspense, useState, useMemo, useEffect } from 'react'
+import { clearAuthToken, getAuthToken } from '@/lib/auth'
+import { Suspense, useState, useMemo, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Channel, SensorConfig, CarConfig, CarsConfig, CarFormState, DefaultFormState } from '@/types/carConfigTypes'
 import  ChannelCard  from '@/components/ui/channelCard'
 import FormField from '@/components/ui/formField'
 
-function ConfigContent({ authToken }: { authToken: string }) {
+const LOGIN_EXPIRED_PATH = '/login?reason=session-expired'
+
+function ConfigContent({ authToken, onAuthFailure }: { authToken: string; onAuthFailure: () => void }) {
   const [allCarsConfig, setAllCarsConfig] = useState<CarsConfig>({});
   const [formState, setFormState] = useState<CarFormState>(DefaultFormState);
   const [channels, setChannels] = useState<Channel[]>([
@@ -39,25 +41,17 @@ function ConfigContent({ authToken }: { authToken: string }) {
 
   const mqttOptions = useMemo(() => ({
     username: authToken,
-    password: '',
+    password: 'empty',
   }), [authToken]);
 
-  const { publish, isConnected, lastMessage } = useMqtt({
-    uri: process.env.NEXT_PUBLIC_MQTT_URL as string,
-    topic: `cars/config`,
-    options: mqttOptions
-  });
-
-  useEffect(() => {
-    if (!lastMessage) return;
-
+  const handleMessage = useCallback((_: string, message: string) => {
     try {
-      const parsed = JSON.parse(lastMessage.message) as { cars?: CarsConfig };
+      const parsed = JSON.parse(message) as { cars?: CarsConfig };
       const cars: CarsConfig = parsed.cars ?? (parsed as CarsConfig);
       const carConfig = cars[selectedCar];
 
       if (!carConfig) return;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+
       setFormState({
         active: carConfig.active ?? true,
         theme: carConfig.theme ?? "default",
@@ -85,7 +79,15 @@ function ConfigContent({ authToken }: { authToken: string }) {
     } catch (err) {
       console.error("Failed to parse config:", err);
     }
-  }, [lastMessage, selectedCar]);
+  }, [selectedCar]);
+
+  const { publish, isConnected } = useMqtt({
+    uri: process.env.NEXT_PUBLIC_MQTT_URL as string,
+    topic: `cars/config`,
+    options: mqttOptions,
+    onAuthFailure,
+    onMessage: handleMessage,
+  });
 
   const updateChannel = (index: number, field: keyof Channel, value: string) => {
     setChannels(prev => {
@@ -270,17 +272,18 @@ function ConfigContent({ authToken }: { authToken: string }) {
 
 export default function ConfigPage() {
   const router = useRouter();
-  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [authToken] = useState<string | null>(() => getAuthToken());
+
+  const handleAuthFailure = useCallback(() => {
+    clearAuthToken();
+    router.replace(LOGIN_EXPIRED_PATH);
+  }, [router]);
 
   useEffect(() => {
-    const token = getAuthToken();
-    if (!token) {
+    if (!authToken) {
       router.replace('/login');
-      return;
     }
-
-    setAuthToken(token);
-  }, [router]);
+  }, [authToken, router]);
 
   if (!authToken) {
     return <div className="p-4">Loading config...</div>;
@@ -288,7 +291,7 @@ export default function ConfigPage() {
 
   return (
     <Suspense fallback={<div className="p-4">Loading config...</div>}>
-      <ConfigContent authToken={authToken} />
+      <ConfigContent authToken={authToken} onAuthFailure={handleAuthFailure} />
     </Suspense>
   );
 }

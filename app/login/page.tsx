@@ -1,19 +1,29 @@
 'use client'
 
 import { ArrowLeft } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { extractAuthToken, setAuthToken } from '@/lib/auth'
+import { toast } from 'sonner'
 
 const AUTH_LOGIN_URL = '/api/auth/login'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (searchParams.get('reason') !== 'session-expired') return
+
+    toast.error('Session expired, please log in again.')
+
+    router.replace('/login')
+  }, [router, searchParams])
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()

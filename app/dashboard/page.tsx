@@ -6,6 +6,8 @@ import { useMqtt } from "@/hooks/use-mqtt"
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 
+const LOGIN_EXPIRED_PATH = '/login?reason=session-expired'
+
 function DashboardContent({ authToken, onAuthFailure }: { authToken: string; onAuthFailure: () => void }) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -72,12 +74,11 @@ function DashboardContent({ authToken, onAuthFailure }: { authToken: string; onA
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [authToken, setAuthToken] = useState<string | null>(() => getAuthToken())
+  const [authToken] = useState<string | null>(() => getAuthToken())
 
   const handleAuthFailure = useCallback(() => {
     clearAuthToken()
-    setAuthToken(null)
-    router.replace('/login')
+    router.replace(LOGIN_EXPIRED_PATH)
   }, [router])
 
   useEffect(() => {

@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Image from "next/image";
 import Stinger from "@/public/stinger.png";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 import HeaderButtons from "@/components/ui/appNavButton";
 
 const geistSans = Geist({
