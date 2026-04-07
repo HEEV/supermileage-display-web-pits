@@ -1,12 +1,12 @@
 "use client";
 
 import BackButton from "@/components/ui/backButton"
-import { getAuthToken } from "@/lib/auth"
+import { clearAuthToken, getAuthToken } from "@/lib/auth"
 import { useMqtt } from "@/hooks/use-mqtt"
-import { Suspense, useEffect, useMemo, useState } from "react"
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 
-function DashboardContent({ authToken }: { authToken: string }) {
+function DashboardContent({ authToken, onAuthFailure }: { authToken: string; onAuthFailure: () => void }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const selectedCar = searchParams.get('car') || 'karch'
@@ -14,13 +14,14 @@ function DashboardContent({ authToken }: { authToken: string }) {
   // TODO: the problem is probably not here, but with how the backend auth server returns. Probably not what the mosquitto broker plugin expects.
   const mqttOptions = useMemo(() => ({
     username: authToken,
-    password: ''
+    password: 'empty'
   }), [authToken])
 
   const { isConnected, lastMessage } = useMqtt({
     uri: process.env.NEXT_PUBLIC_MQTT_URL as string,
     topic: `cars/${selectedCar}/data`,
-    options: mqttOptions
+    options: mqttOptions,
+    onAuthFailure
   })
 
   const carData = useMemo(() => {
@@ -71,17 +72,19 @@ function DashboardContent({ authToken }: { authToken: string }) {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [authToken, setAuthToken] = useState<string | null>(null)
+  const [authToken, setAuthToken] = useState<string | null>(() => getAuthToken())
+
+  const handleAuthFailure = useCallback(() => {
+    clearAuthToken()
+    setAuthToken(null)
+    router.replace('/login')
+  }, [router])
 
   useEffect(() => {
-    const token = getAuthToken()
-    if (!token) {
+    if (!authToken) {
       router.replace('/login')
-      return
     }
-
-    setAuthToken(token)
-  }, [router])
+  }, [authToken, router])
 
   if (!authToken) {
     return <div style={{ padding: '2rem' }}>Loading dashboard...</div>
@@ -89,7 +92,7 @@ export default function DashboardPage() {
 
   return (
     <Suspense fallback={<div style={{ padding: '2rem' }}>Loading dashboard...</div>}>
-      <DashboardContent authToken={authToken} />
+      <DashboardContent authToken={authToken} onAuthFailure={handleAuthFailure} />
     </Suspense>
   )
 }

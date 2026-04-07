@@ -5,6 +5,7 @@ interface UseMqttProps {
   uri: string;
   options?: IClientOptions;
   topic: string;
+  onAuthFailure?: (reason?: string) => void;
 }
 
 const createClientId = (prefix: string) => {
@@ -14,13 +15,37 @@ const createClientId = (prefix: string) => {
   return `${prefix}-${Math.random().toString(16).slice(2, 10)}`;
 };
 
-export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
+export const useMqtt = ({ uri, options, topic, onAuthFailure }: UseMqttProps) => {
   const clientRef = useRef<MqttClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<{ topic: string; message: string } | null>(null);
 
+  const isAuthError = (err: unknown) => {
+    if (!err || typeof err !== 'object') return false;
+
+    const mqttErr = err as {
+      message?: string;
+      code?: unknown;
+    };
+
+    const code = typeof mqttErr.code === 'number' ? mqttErr.code : null;
+    // mqtt.js ErrorWithReasonCode: 4 = bad username/password, 5 = not authorized.
+    if (code === 4 || code === 5) return true;
+
+    const message = (mqttErr.message ?? '').toLowerCase();
+
+    return (
+      message.includes('not authorized') ||
+      message.includes('bad username or password') ||
+      message.includes('not authorised') ||
+      message.includes('unauth') ||
+      message.includes('auth')
+    );
+  };
+
   useEffect(() => {
     let cancelled = false;
+    let authFailureTriggered = false;
     const resolvedUri =
       typeof window !== 'undefined' && window.location.protocol === 'https:'
         ? uri.replace(/^ws:/, 'wss:')
@@ -58,6 +83,12 @@ export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
 
     mqttClient.on('error', (err) => {
       console.error('MQTT Connection Error: ', err);
+
+      if (!authFailureTriggered && isAuthError(err)) {
+        authFailureTriggered = true;
+        onAuthFailure?.(err.message);
+        mqttClient.end(true);
+      }
     });
 
     mqttClient.on('message', (t, msg) => {
@@ -66,10 +97,11 @@ export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
     clientRef.current = mqttClient;
     return () => {
         cancelled = true;
+        authFailureTriggered = true;
         mqttClient.end(true);
         clientRef.current = null;
     };
-  }, [options, topic, uri]); 
+  }, [onAuthFailure, options, topic, uri]); 
 
   const publish = useCallback(
     (targetTopic: string, message: string, pubOptions?: IClientPublishOptions) => {
