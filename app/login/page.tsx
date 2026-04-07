@@ -2,12 +2,12 @@
 
 import { ArrowLeft } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { extractAuthToken, setAuthToken } from '@/lib/auth'
 import { toast } from 'sonner'
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [username, setUsername] = useState('')
@@ -135,5 +135,13 @@ export default function LoginPage() {
         </div>
       </form>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="p-4 text-white">Loading login...</div>}>
+      <LoginContent />
+    </Suspense>
   )
 }
