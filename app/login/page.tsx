@@ -7,8 +7,6 @@ import type { FormEvent } from 'react'
 import { extractAuthToken, setAuthToken } from '@/lib/auth'
 import { toast } from 'sonner'
 
-const AUTH_LOGIN_URL = '/api/auth/login'
-
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -37,7 +35,7 @@ export default function LoginPage() {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch(AUTH_LOGIN_URL, {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
