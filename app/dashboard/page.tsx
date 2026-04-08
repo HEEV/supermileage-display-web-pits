@@ -12,6 +12,7 @@ function DashboardContent() {
   const router = useRouter()
 
   const [runtimeConnected, setRuntimeConnected] = useState(false);
+  const [simRunning, setSimRunning] = useState(false);
   const [estFuelCost, setEstFuelCost] = useState(0);
   const selectedCar = searchParams.get('car') || 'karch'
 
@@ -40,6 +41,7 @@ function DashboardContent() {
 
   async function runSimulation(){
     console.log("Running Simulation.")
+    setSimRunning(true)
     // console.log(carData.temp, carData.pressure);
     // console.log(carData.speed, carData.distance_traveled, carData.time, carData.selectedCar, carData.fuel, carData.burnsUsed, carData);
     if(carData){ // carData needs to exist
@@ -51,12 +53,22 @@ function DashboardContent() {
       console.log("Lap Number: ", lapNum);
       const result = await pyRunSimulation("simulation_data", "Gold Lightning II", "Ima Placeholder", "indy", 
                                            70, 14.6957, carData.speed, carData.time, estFuelCost, 0, lapNum);
+      setSimRunning(false)
       console.log("Simulation Finished.");
       setEstFuelCost(result[0]);
       console.log("After Fuel: ", estFuelCost);
       const simData = result[1];
       sendSimData(simData);
       console.log("Data: " + simData[0]);
+    } else {
+      // run default simulation for testing
+      console.log("Before Fuel: ", estFuelCost);
+      const defaultResult = await pyRunSimulation("simulation_data", "Gold Lightning II", "Ima Placeholder", "indy", 
+                                                  70, 14.6957, 0, 0, estFuelCost, 0, 1);
+      setSimRunning(false)
+      setEstFuelCost(defaultResult[0]);
+      console.log("After Fuel: ", defaultResult[0]);
+      sendSimData(defaultResult[1]);
     }
   };
 
@@ -124,7 +136,7 @@ function DashboardContent() {
       </button>
       <button
         onClick={ runSimulation }
-        disabled={!runtimeConnected}
+        disabled={!runtimeConnected || simRunning}
         className="w-full bg-red-600 hover:bg-red-600/90 disabled:opacity-50 py-3 rounded-lg font-semibold"
       >
         Run Simulation
