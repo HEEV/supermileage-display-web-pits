@@ -58,7 +58,8 @@ function DashboardContent() {
       setEstFuelCost(result[0]);
       console.log("After Fuel: ", estFuelCost);
       const simData = result[1];
-      sendSimData(simData);
+      // simData is a list of lists of dictionaries. Each item in simData is a burn/coast strategy for a lap of the race
+      sendSimData(simData[0]); // sends only the first lap to the car to display
       console.log("Data: " + simData[0]);
     } else {
       // run default simulation for testing
@@ -68,7 +69,8 @@ function DashboardContent() {
       setSimRunning(false)
       setEstFuelCost(defaultResult[0]);
       console.log("After Fuel: ", defaultResult[0]);
-      sendSimData(defaultResult[1]);
+      const simData = defaultResult[1];
+      sendSimData(simData[0]); // sends only first lap of data
     }
   };
 
