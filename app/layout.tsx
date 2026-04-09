@@ -4,7 +4,7 @@ import "./globals.css";
 import "./colors.css";
 import Image from "next/image";
 import Stinger from "@/public/stinger.png";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 import HeaderButtons from "@/components/appNavButton";
 
 const geistSans = Geist({

@@ -2,11 +2,23 @@
 
 import { useRouter } from 'next/navigation'
 import { Activity, Settings } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { getAuthToken } from '@/lib/auth'
 
 export default function PitCrewMenu() {
   const router = useRouter()
+  const [authToken] = useState<string | null>(() => getAuthToken())
   const [selectedCar, setSelectedCar] = useState("")
+
+  useEffect(() => {
+    if (!authToken) {
+      router.replace('/login')
+    }
+  }, [authToken, router])
+
+  if (!authToken) {
+    return <div className="p-4 text-white">Loading pit page...</div>
+  }
 
   return (
     <div className="min-h-screen bg-black text-white px-8 py-12">
