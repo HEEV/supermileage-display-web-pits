@@ -5,8 +5,11 @@ interface UseMqttProps {
   uri: string;
   options?: IClientOptions;
   topic: string;
+  onAuthFailure?: (reason?: string) => void;
+  onMessage?: (topic: string, message: string) => void;
 }
 
+// Build a stable-ish client id so parallel tabs/sessions do not collide.
 const createClientId = (prefix: string) => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return `${prefix}-${crypto.randomUUID().slice(0, 8)}`;
@@ -14,13 +17,39 @@ const createClientId = (prefix: string) => {
   return `${prefix}-${Math.random().toString(16).slice(2, 10)}`;
 };
 
-export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
+export const useMqtt = ({ uri, options, topic, onAuthFailure, onMessage }: UseMqttProps) => {
   const clientRef = useRef<MqttClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<{ topic: string; message: string } | null>(null);
 
+  // Detect auth failures from MQTT reason codes and common broker error text.
+  const isAuthError = (err: unknown) => {
+    if (!err || typeof err !== 'object') return false;
+
+    const mqttErr = err as {
+      message?: string;
+      code?: unknown;
+    };
+
+    const code = typeof mqttErr.code === 'number' ? mqttErr.code : null;
+    // mqtt.js ErrorWithReasonCode: 4 = bad username/password, 5 = not authorized.
+    if (code === 4 || code === 5) return true;
+
+    const message = (mqttErr.message ?? '').toLowerCase();
+
+    return (
+      message.includes('not authorized') ||
+      message.includes('bad username or password') ||
+      message.includes('not authorised') ||
+      message.includes('unauth') ||
+      message.includes('auth')
+    );
+  };
+
+  // Manage the MQTT connection lifecycle for the current uri/topic/options set.
   useEffect(() => {
     let cancelled = false;
+    let authFailureTriggered = false;
     const resolvedUri =
       typeof window !== 'undefined' && window.location.protocol === 'https:'
         ? uri.replace(/^ws:/, 'wss:')
@@ -58,19 +87,30 @@ export const useMqtt = ({ uri, options, topic }: UseMqttProps) => {
 
     mqttClient.on('error', (err) => {
       console.error('MQTT Connection Error: ', err);
+
+      if (!authFailureTriggered && isAuthError(err)) {
+        authFailureTriggered = true;
+        onAuthFailure?.(err.message);
+        mqttClient.end(true);
+      }
     });
 
     mqttClient.on('message', (t, msg) => {
-        if (!cancelled) setLastMessage({ topic: t, message: msg.toString() });
+        if (!cancelled) {
+          setLastMessage({ topic: t, message: msg.toString() });
+          onMessage?.(t, msg.toString());
+        }
       });
     clientRef.current = mqttClient;
     return () => {
         cancelled = true;
+        authFailureTriggered = true;
         mqttClient.end(true);
         clientRef.current = null;
     };
-  }, [options, topic, uri]); 
+  }, [onAuthFailure, onMessage, options, topic, uri]); 
 
+  // Publish helper that only writes when the current client is connected.
   const publish = useCallback(
     (targetTopic: string, message: string, pubOptions?: IClientPublishOptions) => {
       if (clientRef.current?.connected) {

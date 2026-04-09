@@ -1,29 +1,91 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
+import type { FormEvent } from 'react'
+import { extractAuthToken, setAuthToken } from '@/lib/auth'
+import { toast } from 'sonner'
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleLogin = () => {
-    if (username && password) {
+  useEffect(() => {
+    if (searchParams.get('reason') !== 'session-expired') return
+
+    toast.error('Session expired, please log in again.')
+
+    router.replace('/login')
+  }, [router, searchParams])
+
+  const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (!username || !password) {
+      setError('Enter both username and password.')
+      return
+    }
+
+    setError(null)
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      })
+
+      const rawBody = await response.text()
+      let parsedBody: unknown = rawBody
+
+      try {
+        parsedBody = JSON.parse(rawBody)
+      } catch {
+        // fall back to the raw response body
+      }
+
+      if (!response.ok) {
+        const message =
+          typeof parsedBody === 'object' && parsedBody !== null && 'message' in parsedBody
+            ? String((parsedBody as { message?: unknown }).message ?? '')
+            : ''
+        throw new Error(message || 'Login failed. Check your credentials and try again.')
+      }
+
+      const token = extractAuthToken(parsedBody)
+      if (!token) {
+        throw new Error('Login succeeded, but no JWT was returned.')
+      }
+
+      setAuthToken(token)
       router.push('/pit')
+    } catch (loginError) {
+      setError(loginError instanceof Error ? loginError.message : 'Login failed.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center text-white">
-      <div className="bg-zinc-900/50 border border-zinc-800 p-10 rounded-xl w-96 shadow-lg">
-        <h2 className="text-2xl font-bold text-white mb-8 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-4 text-white">
+      <form
+        onSubmit={handleLogin}
+        className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900/60 p-10 shadow-2xl backdrop-blur"
+      >
+        <h2 className="mb-2 text-center text-2xl font-bold text-white">
           Pit Crew Login
         </h2>
         <div className="space-y-5">
           <div>
-            <label className="text-xs text-zinc-400 mb-1 block">
+            <label className="mb-1 block text-xs text-zinc-400">
               Username
             </label>
             <input
@@ -31,11 +93,12 @@ export default function LoginPage() {
               placeholder="Enter username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-2 rounded bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+              autoComplete="username"
+              className="w-full rounded border border-zinc-700 bg-zinc-800 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-400 mb-1 block">
+            <label className="mb-1 block text-xs text-zinc-400">
               Password
             </label>
             <input
@@ -43,26 +106,42 @@ export default function LoginPage() {
               placeholder="Enter password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 rounded bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+              autoComplete="current-password"
+              className="w-full rounded border border-zinc-700 bg-zinc-800 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
         </div>
+        {error ? (
+          <p className="mt-4 rounded border border-red-900/60 bg-red-950/50 px-3 py-2 text-sm text-red-200">
+            {error}
+          </p>
+        ) : null}
         <div className="mt-8 space-y-3">
           <button
-            onClick={handleLogin}
-            className="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded font-semibold transition-colors"
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full rounded bg-blue-600 py-2 font-semibold transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Login
+            {isSubmitting ? 'Signing in...' : 'Login'}
           </button>
           <button
+            type="button"
             onClick={() => router.push('/')}
-            className="w-full px-4 py-2 rounded bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 transition-colors flex items-center justify-center gap-2 text-sm text-zinc-300 hover:text-white"
+            className="flex w-full items-center justify-center gap-2 rounded border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-white"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="h-4 w-4" />
             Return to Public Dashboard
           </button>
         </div>
-      </div>
+      </form>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="p-4 text-white">Loading login...</div>}>
+      <LoginContent />
+    </Suspense>
   )
 }
