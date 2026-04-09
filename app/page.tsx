@@ -1,4 +1,4 @@
-import Dashboard from "@/components/ui/dashboard";
+import Dashboard from "@/components/dashboard";
 
 export default function PublicDashboardPage() {
   return <Dashboard mode="public" />;

@@ -67,7 +67,7 @@ export default function TrackView(props: {
         position: 'relative',
       }}
     >
-      <div className="text-xs uppercase text-cyan-400">
+      <div className="text-xs uppercase text-cyan-400 font-bold">
           Current Lap: &nbsp;
         {Math.max(0, props.distanceTraveled - distOffset) < trackLength
           ? 1

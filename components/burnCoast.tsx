@@ -4,7 +4,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import { JSX, useEffect, useMemo, useRef, useState } from 'react';
-import { CURRENT_TRACK, TRACKS } from '../../constants';
+import { CURRENT_TRACK, TRACKS } from '../constants';
 import { RaceStrategy, Segment, SegmentType } from '@/types/simulationTypes';
 
 function convertSimulationToProgress(simulation: RaceStrategy, trackLength: number): Array<Segment> {

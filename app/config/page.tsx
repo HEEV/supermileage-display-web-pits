@@ -2,13 +2,13 @@
 
 'use client'
 
-import BackButton from '@/components/ui/backButton'
+import BackButton from '@/components/backButton'
 import { useMqtt } from '@/hooks/use-mqtt'
 import { Suspense, useState, useMemo, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Channel, SensorConfig, CarConfig, CarsConfig, CarFormState, DefaultFormState } from '@/types/carConfigTypes'
-import  ChannelCard  from '@/components/ui/channelCard'
-import FormField from '@/components/ui/formField'
+import  ChannelCard  from '@/components/channelCard'
+import FormField from '@/components/formField'
 
 function ConfigContent() {
   const [allCarsConfig, setAllCarsConfig] = useState<CarsConfig>({});

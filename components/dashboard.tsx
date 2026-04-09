@@ -1,15 +1,14 @@
 'use client'
 
 import BackButton from "./backButton";
-import BurnCoast from "./burnCoast";
-import { SAMPLE_SIMULATION } from "../../constants";
-import { SegmentType } from '../../types/simulationTypes';
+import IndicatorIcon from "./iconWidget";
 import { useMqtt } from "@/hooks/use-mqtt"
 import { useMemo, useState } from "react"
-import Speedometer from "@/components/ui/speedometer";
+import Speedometer from "@/components/speedometer";
 import TrackView from "@/components/trackView";
-import WindSpeedometer from "@/components/ui/windSpeedometer";
-import TempGauge from "@/components/ui/tempGauge";
+import WindSpeedometer from "@/components/windSpeedometer";
+import TempGauge from "@/components/tempGauge";
+import { buildHistoryPacket, getOptionalNumberValue, isTruthyStatus } from "@/lib/dynamicTelemetry"; // adjust path
 
 type DashboardMode = "public" | "single";
 
@@ -21,7 +20,7 @@ interface DashboardProps {
 function parseMessage(msg?: string) {
   if (!msg) return null;
   try {
-    return JSON.parse(msg.replace(/'/g, '"'));
+    return buildHistoryPacket(JSON.parse(msg.replace(/'/g, '"')));
   } catch {
     return null;
   }
@@ -134,17 +133,24 @@ export default function Dashboard({ mode, carId }: DashboardProps) {
                         trackName='ShellTrackFixed'
                         distanceTraveled={carData?.distance_traveled || 0}
                         scale={100}
-                        //FIXME: the timer_reset_button isn't parsed currently
-                        resetTriggered={true}
+                        resetTriggered={isTruthyStatus(carData?.timer_reset_button)}
                         />
                     </div>
                     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 space-y-3">
                         <h2 className="text-cyan-400 text-xs font-bold tracking-wider">
-                        VEHICLE STATUS
+                        VEHICLE TEMPS
                         </h2>
                         <div className="grid grid-cols-2 gap-2">
                         <TempGauge label="Engine" value={carData?.engine_temp || 0} />
                         <TempGauge label="Radiator" value={carData?.rad_temp || 0} />
+                        </div>
+                    </div>
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 space-y-3">
+                        <h2 className="text-cyan-400 text-xs font-bold tracking-wider">
+                        VOLTAGE
+                        </h2>
+                        <div className="text-3xl font-bold text-[var(--color-text)] flex justify-center items-center">
+                          {getOptionalNumberValue(carData?.voltage) !== undefined ? `${carData?.voltage} v` : '--' }
                         </div>
                     </div>
                     </div>
@@ -156,19 +162,6 @@ export default function Dashboard({ mode, carId }: DashboardProps) {
                         unit="MPH"
                         animate
                     />
-                    <div className="w-full max-w-xl bg-zinc-900 border border-zinc-800 rounded-lg p-3">
-                        <div className="text-cyan-400 text-xs font-bold text-center mb-2">
-                        SIMULATION
-                        </div>
-                        <BurnCoast
-                            currentDistance={carData?.distance_traveled || 5}
-                            //FIXME: engine on status isn't parsed currently...
-                            currentStatus={SegmentType.BURN}
-                            simulationOutput={SAMPLE_SIMULATION}
-                            //FIXME: the timer_reset_button isn't parsed currently
-                            resetTriggered={true}
-                        />
-                    </div>
                     </div>
                     <div className="flex flex-col gap-4">
                     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3">
@@ -182,6 +175,15 @@ export default function Dashboard({ mode, carId }: DashboardProps) {
                         windDir={180}
                         displayUnits
                         />
+                    </div>
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 space-y-3">
+                        <h2 className="text-cyan-400 text-xs font-bold tracking-wider">
+                        ENGINE STATUS
+                        </h2>
+                        <div className="grid grid-rows-2 gap-2 flex-col">
+                        <IndicatorIcon on={isTruthyStatus(carData?.engine_armed)} text={'Armed'} />
+                        <IndicatorIcon on={isTruthyStatus(carData?.engine_on)} text={'Running'} />
+                        </div>
                     </div>
                     </div>
                 </div>

@@ -5,7 +5,7 @@ import "./colors.css";
 import Image from "next/image";
 import Stinger from "@/public/stinger.png";
 import { Toaster } from "@/components/ui/toaster";
-import HeaderButtons from "@/components/ui/appNavButton";
+import HeaderButtons from "@/components/appNavButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

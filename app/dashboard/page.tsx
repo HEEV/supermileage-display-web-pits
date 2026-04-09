@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams } from "next/navigation";
-import Dashboard from "@/components/ui/dashboard";
+import Dashboard from "@/components/dashboard";
 import { Suspense } from "react";
 
 function PitCrewDashboardContent() {
