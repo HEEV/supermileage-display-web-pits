@@ -75,10 +75,10 @@ function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-4 text-white">
+    <div className="min-h-screen flex items-center justify-center bg-black px-4 text-white">
       <form
         onSubmit={handleLogin}
-        className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900/60 p-10 shadow-2xl backdrop-blur"
+        className="w-full max-w-md rounded-2xl border border-zinc-800 bg-black p-10 shadow-2xl backdrop-blur"
       >
         <h2 className="mb-2 text-center text-2xl font-bold text-white">
           Pit Crew Login
@@ -94,7 +94,7 @@ function LoginContent() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               autoComplete="username"
-              className="w-full rounded border border-zinc-700 bg-zinc-800 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full rounded border border-zinc-700 bg-black px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
           <div>
@@ -107,7 +107,7 @@ function LoginContent() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
-              className="w-full rounded border border-zinc-700 bg-zinc-800 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full rounded border border-zinc-700 bg-black px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
         </div>
@@ -127,7 +127,7 @@ function LoginContent() {
           <button
             type="button"
             onClick={() => router.push('/')}
-            className="flex w-full items-center justify-center gap-2 rounded border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-white"
+            className="flex w-full items-center justify-center gap-2 rounded border border-zinc-700 bg-black px-4 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Return to Public Dashboard

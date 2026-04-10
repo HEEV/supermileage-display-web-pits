@@ -5,6 +5,7 @@ interface UseMqttProps {
   uri: string;
   options?: IClientOptions;
   topic: string;
+  enabled?: boolean;
   onAuthFailure?: (reason?: string) => void;
   onMessage?: (topic: string, message: string) => void;
 }
@@ -17,7 +18,7 @@ const createClientId = (prefix: string) => {
   return `${prefix}-${Math.random().toString(16).slice(2, 10)}`;
 };
 
-export const useMqtt = ({ uri, options, topic, onAuthFailure, onMessage }: UseMqttProps) => {
+export const useMqtt = ({ uri, options, topic, enabled, onAuthFailure, onMessage }: UseMqttProps) => {
   const clientRef = useRef<MqttClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<{ topic: string; message: string } | null>(null);
@@ -48,6 +49,10 @@ export const useMqtt = ({ uri, options, topic, onAuthFailure, onMessage }: UseMq
 
   // Manage the MQTT connection lifecycle for the current uri/topic/options set.
   useEffect(() => {
+    if (enabled === false){
+      setIsConnected(false);
+      return;
+    }
     let cancelled = false;
     let authFailureTriggered = false;
     const resolvedUri =
