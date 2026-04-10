@@ -108,16 +108,23 @@ export default function Dashboard({
         : null
       : singleData
 
-  if (!activeCar || !carData) {
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">No Car Connected</h1>
-          <p className="text-zinc-400">Waiting for telemetry...</p>
-        </div>
-      </div>
-    )
-  }
+      if (!activeCar || !carData) {
+        return (
+          <div className="min-h-screen bg-black text-white flex items-center justify-center relative">
+            
+            {mode === "single" && (
+              <div className="absolute top-4 left-4">
+                <BackButton />
+              </div>
+            )}
+      
+            <div className="text-center">
+              <h1 className="text-2xl font-bold mb-2">No Car Connected</h1>
+              <p className="text-zinc-400">Waiting for telemetry...</p>
+            </div>
+          </div>
+        )
+      }
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
