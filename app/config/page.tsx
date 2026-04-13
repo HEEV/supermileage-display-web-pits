@@ -1,13 +1,13 @@
 'use client'
 
-import BackButton from '@/components/ui/backButton'
+import BackButton from '@/components/backButton'
 import { useMqtt } from '@/hooks/use-mqtt'
 import { clearAuthToken, getAuthToken } from '@/lib/auth'
 import { Suspense, useState, useMemo, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Channel, SensorConfig, CarConfig, CarsConfig, CarFormState, DefaultFormState } from '@/types/carConfigTypes'
-import  ChannelCard  from '@/components/ui/channelCard'
-import FormField from '@/components/ui/formField'
+import  ChannelCard  from '@/components/channelCard'
+import FormField from '@/components/formField'
 
 const LOGIN_EXPIRED_PATH = '/login?reason=session-expired'
 
@@ -136,7 +136,7 @@ function ConfigContent({ authToken, onAuthFailure }: { authToken: string; onAuth
     setAllCarsConfig(updatedAllCars);
   };
   return (
-    <div className="h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 p-4 overflow-hidden">
+    <div className="h-screen bg-black p-4 overflow-hidden">
       <div className="max-w-7xl mx-auto h-full flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
