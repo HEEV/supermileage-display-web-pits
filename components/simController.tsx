@@ -13,11 +13,7 @@ export default function SimulationController(props: {
   const [simRunning, setSimRunning] = useState(false);
   const [estFuelCost, setEstFuelCost] = useState(0);
   const [relativeTime, setRelativeTime] = useState(0);
-
-  if (props.carData && props.carData.time) {
-    // set the initial time for when the simulation is run, so we can accurately calculate relativeTime
-    setRelativeTime(props.carData.time.getTime());
-  }
+  const [initialTime, setInitialTime] = useState(0);
   
   async function runSimulation(){
     console.log("Running Simulation.")
@@ -32,7 +28,7 @@ export default function SimulationController(props: {
       const lapNum = Math.ceil(props.carData.distance_traveled / (2.39072566 * 5280)); //hardcoded for Shell Track
       console.log("Lap Number: ", lapNum);
       if(props.carData.time){
-        setRelativeTime(props.carData.time.getTime() - relativeTime)
+        setRelativeTime(props.carData.time.getTime() - initialTime)
       }
       const result = await pyRunSimulation("simulation_data", "Gold Lightning II", "Ima Placeholder", "indy", 
                                            70, 14.6957, props.carData.speed, relativeTime, estFuelCost, 0, lapNum);
@@ -61,6 +57,10 @@ export default function SimulationController(props: {
     const connected = await pyRuntimeConnect();
     setRuntimeConnected(connected);
     console.log("Connection Result: " + connected); 
+    if (props.carData && props.carData.time) {
+      // set the initial time for when the simulation is run, so we can accurately calculate relativeTime
+      setInitialTime(props.carData.time.getTime());
+    }
   };
 
   async function disconnectRuntime(){
