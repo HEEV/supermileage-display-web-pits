@@ -9,12 +9,14 @@ import Speedometer from "@/components/speedometer"
 import TrackView from "@/components/trackView"
 import WindSpeedometer from "@/components/windSpeedometer"
 import TempGauge from "@/components/tempGauge"
+import SimulationController from "@/components/simController"
 
 import {
   buildHistoryPacket,
   getOptionalNumberValue,
   isTruthyStatus,
 } from "@/lib/dynamicTelemetry"
+import { SimulationDataForm } from "@/types/carConfigTypes"
 
 type DashboardMode = "public" | "single"
 
@@ -83,6 +85,24 @@ export default function Dashboard({
   const stingData = parseMessage(sting.lastMessage?.message)
   const singleData = parseMessage(single.lastMessage?.message)
 
+  const sendSimData = (simData: SimulationDataForm) => {
+    if(mode === "single"){
+      single.publish(`cars/${carId}/sim`, JSON.stringify({ simData: simData }), {
+        qos: 1
+      });
+    } else {
+      console.log("You are trying to run the simulation while mode is public.")
+    }
+  };
+
+  // Trying to maintain safety with being able to exit dashboard without disconnecting Runtime
+  // async function handleBack(){
+  //   if (runtimeConnected) {
+  //     await disconnectRuntime();
+  //   }
+  //   router.push('/pit');
+  // };
+
   const availableCars =
     mode === "public"
       ? ([
@@ -130,7 +150,7 @@ export default function Dashboard({
     <div className="min-h-screen bg-black text-white p-6">
       <div className="grid grid-cols-3 items-center mb-6">
         <div className="flex items-center">
-          {mode === "single" && <BackButton />}
+          {mode === "single" && <BackButton/>}
         </div>
 
         <div className="flex justify-center">
@@ -225,6 +245,19 @@ export default function Dashboard({
               />
             </div>
           </div>
+          {mode === "single" &&
+            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 space-y-3">
+              <h2 className="text-cyan-400 text-xs font-bold tracking-wider">
+                SIMULATION CONTROL
+              </h2>
+              <div className="grid grid-rows-2 gap-2">
+                <SimulationController
+                  carData={singleData}
+                  publishSim={sendSimData}
+                />
+              </div>
+            </div>
+          }
         </div>
       </div>
     </div>
