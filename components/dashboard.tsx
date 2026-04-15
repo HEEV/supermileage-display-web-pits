@@ -245,17 +245,20 @@ export default function Dashboard({
               />
             </div>
           </div>
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 space-y-3">
-            <h2 className="text-cyan-400 text-xs font-bold tracking-wider">
-              SIMULATION CONTROL
-            </h2>
-            <div className="grid grid-rows-2 gap-2">
-              <SimulationController
-                carData={singleData}
-                publishSim={sendSimData}
-              />
+          {mode === "single" &&
+            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 space-y-3">
+              <h2 className="text-cyan-400 text-xs font-bold tracking-wider">
+                SIMULATION CONTROL
+              </h2>
+              <div className="grid grid-rows-2 gap-2">
+                <SimulationController
+                  carData={singleData}
+                  publishSim={sendSimData}
+                />
+              </div>
             </div>
-          </div>
+          }
+          
         </div>
       </div>
     </div>
