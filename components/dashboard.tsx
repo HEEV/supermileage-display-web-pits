@@ -171,7 +171,7 @@ export default function Dashboard({
             <h2 className="text-cyan-400 text-xs font-bold tracking-wider">
               VEHICLE TEMPS
             </h2>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 justify-items-center">
               <TempGauge label="Engine" value={carData.engine_temp || 0} />
               <TempGauge label="Radiator" value={carData.rad_temp || 0} />
             </div>
@@ -194,7 +194,6 @@ export default function Dashboard({
             min={0}
             max={100}
             unit="MPH"
-            animate
           />
         </div>
         <div className="flex flex-col gap-4">
@@ -214,14 +213,16 @@ export default function Dashboard({
             <h2 className="text-cyan-400 text-xs font-bold tracking-wider">
               ENGINE STATUS
             </h2>
-            <div className="grid grid-rows-2 gap-2">
+            <div className="grid grid-rows-2 gap-2 justify-center">
               <IndicatorIcon
                 on={isTruthyStatus(carData.engine_armed)}
                 text="Armed"
+                iconWidth={200}
               />
               <IndicatorIcon
                 on={isTruthyStatus(carData.engine_on)}
                 text="Running"
+                iconWidth={200}
               />
             </div>
           </div>

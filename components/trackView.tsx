@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import { motion } from 'framer-motion';
@@ -65,6 +64,7 @@ export default function TrackView(props: {
     <div
       style={{
         position: 'relative',
+        width: '100%',
       }}
     >
       <div className="text-xs uppercase text-cyan-400 font-bold">
@@ -81,8 +81,10 @@ export default function TrackView(props: {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          height: '20vh',
-          width: '18vw',
+          width: '100%',
+          maxWidth: '100%',
+          aspectRatio: '710 / 485',
+          overflow: 'hidden',
         }}
       >
         <svg
