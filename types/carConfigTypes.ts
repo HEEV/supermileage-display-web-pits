@@ -41,11 +41,20 @@ export interface CarFormState {
   selectedRace: string;
 }
 
+export interface SimulationDict {
+  time: number;
+  distance: number;
+  segmentType: number;
+}
+export interface SimulationDataForm {
+  burnCoastStrat: SimulationDict[];
+}
+
 export const DefaultFormState: CarFormState = {
-    active: true,
-    theme: "default",
-    weight: "30",
-    powerPlant: "gasoline",
-    selectedDriver: "",
-    selectedRace: "Indy 500",
-  };
+  active: true,
+  theme: "default",
+  weight: "30",
+  powerPlant: "gasoline",
+  selectedDriver: "",
+  selectedRace: "Indy 500",
+};
